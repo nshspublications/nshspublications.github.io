@@ -3,11 +3,12 @@ let wakeLock = null;
 const requestWakeLock = async () => {
   try {
     wakeLock = await navigator.wakeLock.request('screen');
-    console.log('Wake Lock is active!');
+    dbg_cout('\nWake Lock is active!\n');
   } catch (err) {
     // The request can fail if the device is in low-power mode 
     // or if the window is not visible.
     console.error(`${err.name}, ${err.message}`);
+    dbg_cout("\n"+'ERROR: '+`${err.name}, ${err.message}`+"\n");
   }
 };
 
