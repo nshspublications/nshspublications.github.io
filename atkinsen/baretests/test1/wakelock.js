@@ -1,5 +1,7 @@
 let wakeLock = null;
 
+dbg_cout("wakelock.js reached\n");
+
 const requestWakeLock = async () => {
   try {
     wakeLock = await navigator.wakeLock.request('screen');
