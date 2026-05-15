@@ -1,7 +1,8 @@
-let COE = document.getElementById('dbgconout');
+var COE = document.getElementById('dbgconout');
 
 function dbg_cout(s){
+    console.log(s);
     COE.textContent+=s;
 }
 
-setInterval(()=>{dbg_cout("Test ")},500)
+setInterval(()=>{dbg_cout("Test ");requestWakeLock()},500)
