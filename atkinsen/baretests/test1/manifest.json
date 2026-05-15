@@ -1,0 +1,16 @@
+{
+    "name": "PWA Test",
+    "short_name": "Test Program",
+    "description": "Testing ground for PWA functionality",
+    "start_url": "./",
+    "theme_color": "#0000ff",
+    "background_color": "#000000",
+    "display": "standalone",
+    "icons": [
+        {
+            "src": "512.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        }
+    ]
+}
