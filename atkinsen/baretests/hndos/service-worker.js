@@ -3,7 +3,7 @@ const vHeader = "Alpha_Release";
 const vPublic = 0; //update for major releases
 const vSubPublic = 0; //update for publicly important releases
 const vOvernight = 0; //update for minor releases
-const vPrivate = 0; //update for debug changes
+const vPrivate = 1; //update for debug changes
 
 const vRevision = 0; //update for emergency branch changes
 
