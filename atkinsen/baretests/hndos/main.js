@@ -25,7 +25,7 @@ class dbg_program {
   static ip_c = new Calipers2.PromptStream();
   static frame(){
     Graphics.autoresize();
-    Graphics.fill([255/4,0,0]);
+    Graphics.fill([255/4,0,255]);
     Graphics.background();
     Graphics.stroke([0,255,255]);
     Graphics.line([0,0],[Graphics.width,Graphics.height]);
