@@ -1,0 +1,23 @@
+{
+    "name": "HNet QDOS Project",
+    "short_name": "HN DOS",
+    "description": "HNet At The Atkinsen Institute Project On DOS Development",
+    "start_url": "./",
+    "theme_color": "#000000",
+    "background_color": "#000000",
+    "display": "standalone",
+    "icons": [
+        {
+            "src": "512.png",
+            "type": "image/png",
+            "sizes": "512x512",
+            "purpose": "maskable"
+        },
+        {
+            "src": "512.png",
+            "type": "image/png",
+            "sizes": "512x512",
+            "purpose": "any"
+        }
+    ]
+}

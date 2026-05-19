@@ -1,0 +1,23 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="viewport" content="width=device-width" />
+    <title>HNet DOS</title>
+    <link rel="icon" type="image/png" href="512.png">
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <canvas id="canvas_element" width="640" height="480" style="position: absolute;"></canvas>
+
+    <p><span style="color: transparent; background: black;" id="ctty"></span><span style="color: white; background: black;" id="ctty_cur"></span></p>
+    <p style="color: white;" id="tty"></p>
+
+    <script src="lcalipers2.js" defer></script>
+    <script src="kernel.js" defer></script>
+    <script src="wakelock.js" defer></script>
+    <script src="initramfs.js" defer></script>
+    <script src="main.js" defer></script>
+  </body>
+</html>
