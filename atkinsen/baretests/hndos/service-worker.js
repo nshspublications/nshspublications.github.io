@@ -3,7 +3,7 @@ const vHeader = "Alpha_Release";
 const vPublic = 0; //update for major releases
 const vSubPublic = 0; //update for publicly important releases
 const vOvernight = 0; //update for minor releases
-const vPrivate = 1; //update for debug changes
+const vPrivate = 0; //update for debug changes
 
 const vRevision = 0; //update for emergency branch changes
 
@@ -22,6 +22,9 @@ const APP_STATIC_RESOURCES = [
   "./lcalipers2.js",
   "./kernel.js",
   "./initramfs.js",
+  "./fslib.js",
+  "./tools.js",
+  "./debug.js",
 ];
 
 const CACHE_NAME = `HNet-DOS-Project-${VERSION}`;

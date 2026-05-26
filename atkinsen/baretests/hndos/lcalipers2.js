@@ -1,9 +1,9 @@
 class Calipers2 {
     static framecall = () => {};
-    static animatecall = () => {Calipers2.framecall();window.requestAnimationFrame(Calipers2.animatecall)};
+    static animatecall = () => {Calipers2.framecall();return window.requestAnimationFrame(Calipers2.animatecall)};
     static setframecall(call){
         Calipers2.framecall = call;
-        Calipers2.animatecall();
+        return Calipers2.animatecall();
     }
     static Tools = class {
         static StdKeyHandler(SpecialKeyCallback, InputStream){

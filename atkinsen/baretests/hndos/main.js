@@ -21,31 +21,54 @@ Teletype.set_curoff(0);
     Teletype.set_post("HNet QDOS\n"+Console.Streams.Short);
 },1000/15);*/
 
-class dbg_program {
-  static ip_c = new Calipers2.PromptStream();
+/*JobManager.Jobs.push(
+  new JobManager.Job(
+    'frame',
+    new Executable.Program(
+      class {
+        static frame(){
+          dbg_program.frame();
+        }
+      },
+      'frame'
+    )
+  )
+);*/
+JobManager.call(JobManager.create(
+  new JobManager.Job(
+    'frame',
+    new Executable.Program(
+      class {
+        static frame(){
+          dbg_program.frame();
+        }
+      },
+      'frame'
+    )
+  )
+));
+
+class k_framemgr {
+  static rafret;
+  static lastcalltime = 0;
+  static BestFramerateApprox = 0;
   static frame(){
-    Graphics.autoresize();
-    Graphics.fill([255/4,0,255]);
-    Graphics.background();
-    Graphics.stroke([0,255,255]);
-    Graphics.line([0,0],[Graphics.width,Graphics.height]);
-    Graphics.line([Graphics.width,0],[0,Graphics.height]);
-    this.ip_c.Update();
-    Teletype.set_post(this.ip_c.file);
-    Teletype.set_curoff(this.ip_c.curoff);
+    k_framemgr.BestFramerateApprox = 1000/(Date.now() - k_framemgr.lastcalltime);
+    //dbg_program.frame();//dbg
+    JobManager.frame();
+
+    k_framemgr.lastcalltime=Date.now();
   }
 }
 
-class dbg_terminal {
-  static ip_c = new Calipers2.PromptStream();
-  static frame(){
+k_framemgr.lastcalltime = Date.now();
 
-  }
-}
-
-Teletype.set_font("Terminus");
+//Teletype.set_font("Terminus");
 Teletype.curchar = "_";
 
-setInterval(()=>{
+/*setInterval(()=>{
   dbg_program.frame();
-},1000/60);
+},1000/60);*/
+
+//k_framemgr.rafret = requestAnimationFrame(k_framemgr.frame);
+k_framemgr.rafret = Calipers2.setframecall(k_framemgr.frame);
