@@ -64,7 +64,7 @@ class k_framemgr {
 k_framemgr.lastcalltime = Date.now();
 
 //Teletype.set_font("Terminus");
-Teletype.curchar = "_";
+//Teletype.curchar = "_";
 
 /*setInterval(()=>{
   dbg_program.frame();

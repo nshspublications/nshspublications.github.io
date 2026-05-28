@@ -16,20 +16,46 @@ class Console {
 
 class DeviceBus {
     static DeviceWrapper = class { //use this to route device calls between JavaScript methods
-        constructor(method_write, method_read){
-            this.m_write = method_write;
-            this.m_read = method_read;
+        static Description = class {
+            constructor(name = "Indescript_Device", vendorname = "Unknown_Vendor", vendorid = null){
+                this.name = name;
+                this.vn = vendorname;
+                this.vid = vendorid;
+            }
         }
-        write(){
-
+        static StandardMethodPlugboard = class {
+            constructor(method_write, method_read, method_open, method_close){
+                this.m_w = method_write;
+                this.m_r = method_read;
+                this.m_o = method_open;
+                this.m_c = method_close;
+            }
         }
-        read(){
-
+        constructor(methods = new DeviceBus.DeviceWrapper.StandardMethodPlugboard((buffer)=>{},(buffer)=>{},(buffer)=>{},(buffer)=>{}), descriptives = new DeviceBus.DeviceWrapper.Description(), persistant_data = class {}){
+            this.m = methods;
+            this.desc = descriptives;
+            this.persist = persistant_data;
+        }
+        write(databuffer){
+            return this.m.m_w(databuffer, this.persist);
+        }
+        read(databuffer){
+            return this.m.m_r(databuffer, this.persist);
+        }
+        open(databuffer){
+            return this.m.m_o(databuffer, this.persist);
+        }
+        close(databuffer){
+            return this.m.m_c(databuffer, this.persist);
         }
     }
     static Devices = [
 
     ];
+    static RegisterDevice(devwrapper){
+        this.Devices.push(devwrapper);
+        return this.Devices.length-1;
+    }
 }
 
 class FilesystemManager {

@@ -19,6 +19,7 @@ class dbg_program {
 
 class dbg_cmd {
   static ip_c = new Calipers2.PromptStream();
+  static ALLOWALIASLOOP = false;
   static Command = class {
     constructor(name, callback){
       this.name = name;
@@ -78,6 +79,50 @@ class dbg_cmd {
         delete this.aliasreg[params[0]];
         return "";
     }),
+    pmc: new this.Command("pmc", (params) => {
+        //return "Not yet implemented.\n";//debug
+        if(params.length === 0){
+            return "Protection Management Console\nUsage: `pmc [service] [modifier] [set]` OR `pmc [service] help` for help with service OR `pmc help` for a list of usage entries.\n";
+        }
+        switch(params[0]){
+            case "help":
+                return (
+                    "Protection Management Console\n"
+                    +"\tCommands:\n"
+                    +"help \t(opt: command)"+" -- (opt: command) NOT YET IMPLEMENTED"+"\n"
+                    +"\n"
+
+                    +"\tServices:\n"
+                    +"aliasloop \t[allow/disallow]\n"
+                );
+                //break;
+            case "aliasloop":
+                switch(params.length){
+                    case 1:
+                        return "Insufficient Parameters.\n";
+                    case 2:
+                        switch(params[1]){
+                            case "allow":
+                                this.ALLOWALIASLOOP = true;
+                                return "";
+                            case "disallow":
+                                this.ALLOWALIASLOOP = true;
+                                return "";
+                            default:
+                                return "Unregistered parameter '"+params[1]+"' ; Use {allow, disallow}\n";
+                        }
+                    default:
+                        return "? ON "+params.length+" aliasloop\n";
+                }
+                return "";
+            default: 
+                return "Service or method '"+params[0]+"' not found in usage entry registry.\n";//kind of a decepticon, for now. 
+        }
+        return "[Command(pmc)] ERROR: BAD RETURN 0 ON PARAMETER BUFFER "+JSON.stringify(params)+".\n";
+    }),
+    X: new this.Command("X", (params) => {
+        return "";
+    }),
   };
   static aliasreg = {
     "list-packages": new this.Alias("list-packages", "lscr"),
@@ -99,10 +144,27 @@ class dbg_cmd {
   static pathstr(){
     return "/";//dbg
   }
+  static framediverter = null;
+  static framediverterbuffer = [];
+  static flushsystemconsole = true;
   static frame(){
     this.ip_c.Update();
 
-    if(this.ip_c.file.includes("\n")){
+    if(this.flushsystemconsole && Console.Streams.Short !== ""){
+        Teletype.out_sw(["","\n[Console] "+Console.Streams.Short+"\n",""]);
+        Console.clear();
+    }
+
+    if(this.framediverter !== null && this.framediverter !== ""){
+        try{
+            if(this[this.framediverter] !== undefined){
+                this[this.framediverter](this.framediverterbuffer);
+            }
+        }catch(e){
+            Console.write("Error @ dbg_cmd.frame : "+e.msg+"\ndbg_cmd.framediverterbuffer left as : "+JSON.stringify()+"\n");
+            this.framediverter = null;
+        }
+    }else if(this.ip_c.file.includes("\n")){
       let cmd = this.ip_c.file.split("\n").join("");
       let ps = this.prefstr();
       this.ip_c.ResetFile();
@@ -122,7 +184,7 @@ class dbg_cmd {
         if(this.aliasreg[cmd[0]] !== undefined){
           let realcmd = this.aliasreg[cmd[0]].to;
           console.log(realcmd);
-          if(looptracker.includes(realcmd)){
+          if(looptracker.includes(realcmd) && this.ALLOWALIASLOOP !== true){
             console.log(looptracker);
             return "ERROR\nAlias loop detected -- this functionality is disallowed. Use 'pmc aliasloop allow' to remove protection lock.\n";
           }

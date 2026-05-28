@@ -25,6 +25,7 @@ const APP_STATIC_RESOURCES = [
   "./fslib.js",
   "./tools.js",
   "./debug.js",
+  "./deviceinit.js",
 ];
 
 const CACHE_NAME = `HNet-DOS-Project-${VERSION}`;
