@@ -100,6 +100,7 @@ class dbg_cmd {
 
                     +"\tServices:\n"
                     +"aliasloop \t[allow/disallow]\n"
+                    +"clickerdisable \t[allow/disallow]\n"
                 );
                 //break;
             case "aliasloop":
