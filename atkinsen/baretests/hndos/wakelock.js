@@ -1,14 +1,15 @@
 class WakeLock {
   static wakeLockObject = null;
+  static Pedantic = false;
   static requestWakeLock = async () => {
     try {
       WakeLock.wakeLockObject = await navigator.wakeLock.request('screen');
-      Console.write('[wakelock.js] Wake Lock is active!\n');
+      WakeLock.hyperlog('[wakelock.js] Wake Lock is active!\n');
     } catch (err) {
       // The request can fail if the device is in low-power mode 
       // or if the window is not visible.
       console.error(`${err.name}, ${err.message}`);
-      Console.write(""+'ERROR: '+`${err.name}, ${err.message}`+"\n");
+      Console.write_error("\n"+'ERROR: '+`${err.name}, ${err.message}`+"\n");
     }
   };
   static ReleaseWakeLock(){
@@ -18,24 +19,29 @@ class WakeLock {
       });
     }
   }
+  static hyperlog(s){
+    if(this.Pedantic){
+      return Console.write(s);
+    }
+  }
 }
 
-Console.write("[wakelock.js] reached\n");
+WakeLock.hyperlog("[wakelock.js] reached\n");
 
 WakeLock.requestWakeLock(); //needs to happen once to initialize WakeLock.wakeLockObject
 
 document.addEventListener('visibilitychange', async () => {
-  Console.write("[wakelock.js] visibilitychange triggered\n");
+  WakeLock.hyperlog("[wakelock.js] visibilitychange triggered\n");
   if (WakeLock.wakeLockObject !== null && document.visibilityState === 'visible') {
-    Console.write("[wakelock.js] visibilityState: visible\n");
+    WakeLock.hyperlog("[wakelock.js] visibilityState: visible\n");
     await WakeLock.requestWakeLock();
   }
 });
 
 document.addEventListener('click', async () => {
-  Console.write("[wakelock.js] click triggered\n");
+  WakeLock.hyperlog("[wakelock.js] click triggered\n");
   if (WakeLock.wakeLockObject !== null && document.visibilityState === 'visible') {
-    Console.write("[wakelock.js] visibilityState: visible\n");
+    WakeLock.hyperlog("[wakelock.js] visibilityState: visible\n");
     await WakeLock.requestWakeLock();
   }
 });

@@ -1,12 +1,20 @@
 class Console {
     static Relog = false;
+    static LonglogError = false;
     static Streams = class {
         static Long = "";
         static Short = "";
+        static LongError = "";
     }
     static write(s){
         Console.Streams.Long += s;
         Console.Streams.Short += s;
+        if(this.Relog){console.log(s);}
+    }
+    static write_error(s){
+        if(this.LonglogError){Console.Streams.Long += s;}
+        Console.Streams.Short += s;
+        Console.Streams.LongError += s;
         if(this.Relog){console.log(s);}
     }
     static clear(){
