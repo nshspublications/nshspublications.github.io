@@ -26,6 +26,7 @@ const APP_STATIC_RESOURCES = [
   "./tools.js",
   "./debug.js",
   "./deviceinit.js",
+  "./notifications.js",
 ];
 
 const CACHE_NAME = `HNet-DOS-Project-${VERSION}`;

@@ -360,6 +360,7 @@ class DebugIO {
 }
 
 document.addEventListener('click', async () => {
+  PushTools.clickhandle();
   if(DebugIO.useclicker){
     let dbglin = Teletype.tty_pip[2].slice(0,Teletype.tty_pip[2].length+Teletype.curoff)+"_"+Teletype.tty_pip[2].slice(Teletype.tty_pip[2].length+1+Teletype.curoff,Teletype.tty_pip[2].length);
     let buffer = prompt("(DebugIO Prompt can be enabled/disabled with dbg_cmd command `clicker [enable/disable]` -- only works in debug command line)\n"+dbglin+"\nOK: Submit + Enter ; Cancel: Backspace");
