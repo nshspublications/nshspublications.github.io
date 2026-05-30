@@ -1,9 +1,14 @@
 class dbg_program {
   static ip_c = new Calipers2.PromptStream();
   static dbgnull = false;
+  static flushsystemconsole = true;
   static frame(){
     if(!this.dbgnull){
       return dbg_cmd.frame();
+    }
+    if(this.flushsystemconsole && Console.Streams.Short !== ""){
+        Teletype.out_sw(["","\n[Console] "+Console.Streams.Short+"\n",""]);
+        Console.clear();
     }
     Graphics.autoresize();
     Graphics.fill([255/4,0,0]);
@@ -148,7 +153,6 @@ class dbg_cmd {
   static framediverterbuffer = [];
   static flushsystemconsole = true;
   static frame(){
-    this.ip_c.Update();
 
     if(this.flushsystemconsole && Console.Streams.Short !== ""){
         Teletype.out_sw(["","\n[Console] "+Console.Streams.Short+"\n",""]);
@@ -156,6 +160,7 @@ class dbg_cmd {
     }
 
     if(this.framediverter !== null && this.framediverter !== ""){
+      //console.log("framediverter triggered")
         try{
             if(this[this.framediverter] !== undefined){
                 this[this.framediverter](this.framediverterbuffer);
@@ -164,15 +169,17 @@ class dbg_cmd {
             Console.write("Error @ dbg_cmd.frame : "+e.msg+"\ndbg_cmd.framediverterbuffer left as : "+JSON.stringify()+"\n");
             this.framediverter = null;
         }
-    }else if(this.ip_c.file.includes("\n")){
-      let cmd = this.ip_c.file.split("\n").join("");
-      let ps = this.prefstr();
-      this.ip_c.ResetFile();
-      Teletype.out_sw(["",ps+cmd+"\n"+this.process_cmd(cmd),""]);
+    }else{ 
+      this.ip_c.Update();
+      if(this.ip_c.file.includes("\n")){
+        let cmd = this.ip_c.file.split("\n").join("");
+        let ps = this.prefstr();
+        this.ip_c.ResetFile();
+        Teletype.out_sw(["",ps+cmd+"\n"+this.process_cmd(cmd),""]);
+      }
+      Teletype.set_post(this.prefstr()+this.ip_c.file);
+      Teletype.set_curoff(this.ip_c.curoff);
     }
-
-    Teletype.set_post(this.prefstr()+this.ip_c.file);
-    Teletype.set_curoff(this.ip_c.curoff);
   }
   static process_cmd(cmdstr, looptracker = []){
     let cmd = SysLib.StrMan.SplitSimpleCommand(cmdstr);
@@ -197,4 +204,40 @@ class dbg_cmd {
     }
     return "SERIOUS ERROR @ dbg_cmd.process_cmd\n";
   }
+  static droporcontinue([endtime, continuevector = [null, []], dropvector = [null, []], operation_description = "unspecified", alt_op_desc = "drop to command line"]){
+    //console.log("doc");
+    this.ip_c.Update();
+    if(this.ip_c.file.length !== 0){
+      this.framediverter = dropvector[0];
+      this.framediverterbuffer = dropvector[1];
+      this.ip_c.ResetFile();
+    }else if(Date.now()>=endtime){
+      this.framediverter = continuevector[0];
+      this.framediverterbuffer = continuevector[1];
+      this.ip_c.ResetFile();//just for rigor
+    }else{
+      //console.log("docelse");
+      Teletype.set_post("Operation ("+operation_description+") will continue in "+Math.ceil((endtime-Date.now())/1000)+" seconds; \nPress any key to pause operation and drop to alternate method: "+alt_op_desc+". ");
+    }
+  }
+  static fdpaddedeval([fdreturnmethod_success, fdreturnmethod_error, jsevalstr]){
+    try{
+      dbg_cmd.framediverter=fdreturnmethod_success;
+      dbg_cmd.framediverterbuffer = [eval(jsevalstr),0];
+      return dbg_cmd.framediverterbuffer[0];
+    }catch(e){
+      dbg_cmd.framediverter=fdreturnmethod_error;
+      dbg_cmd.framediverterbuffer=[e.msg,1];
+      return e.msg;
+    }
+  }
+  static fdcaterr([s]){
+    Console.write("[framediverter error cat] "+s+"\n");
+    this.framediverter=null;
+  }
 }
+
+dbg_cmd.framediverter = "droporcontinue";
+//dbg_cmd.framediverterbuffer = [Date.now()+10000, [null, []], [null, []], "default start"];
+dbg_cmd.framediverterbuffer = [Date.now()+10000, ["fdpaddedeval", [null, "fdcaterr", "dbg_program.dbgnull=true;"]], [null, []], "Wakelock & Graphical Test"];
+dbg_cmd.ip_c.ResetFile();
