@@ -57,6 +57,16 @@ class SysLib {
             }
             return out;
         }
+        static CoerceStringyParameter(s){
+            if(s.charAt(0) === "'"){
+                s = "\"" + s.slice(1,s.length-1) + "\"";
+            }
+            try{
+                return JSON.parse(s);
+            }catch(e){
+                return s;
+            }
+        }
     }
     static FS = class { //filesystem work
         static fixfchain(l){

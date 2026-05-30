@@ -219,6 +219,20 @@ class dbg_cmd {
       Teletype.clear();  
       return "";
     }),
+    font: new this.Command("font", (params) => {
+      if(params.length===0){
+        return "Change teletype font\nUsage: font [font name]\n";
+      }  
+      Teletype.set_font(SysLib.StrMan.CoerceStringyParameter(params[0]));
+      return "";
+    }),
+    cursor: new this.Command("cursor", (params) => {
+      if(params.length===0){
+        return "Change teletype cursor character\nUsage: cursor [string -- tip: use '\\uXXXX' for special unicode characters; default: \"\\u2588\" aka \u2588 (<-- if this is invisible, change font to System)]\n";
+      }  
+      Teletype.curchar = (SysLib.StrMan.CoerceStringyParameter(params[0]));
+        return "";
+    }),
     X: new this.Command("X", (params) => {
         return "";
     }),
