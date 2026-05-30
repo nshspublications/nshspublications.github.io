@@ -19,6 +19,11 @@
 body {
     font-family: 'System', Courier, monospace;
     background-color: black;
+    touch-action: pan-x pan-y; 
+}
+
+html {
+    touch-action: pan-x pan-y; 
 }
 
 p {
