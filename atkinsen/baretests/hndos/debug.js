@@ -25,6 +25,7 @@ class dbg_program {
 class dbg_cmd {
   static ip_c = new Calipers2.PromptStream();
   static ALLOWALIASLOOP = false;
+  static protect_clickerdisable = true;
   static Command = class {
     constructor(name, callback){
       this.name = name;
@@ -111,7 +112,7 @@ class dbg_cmd {
                                 this.ALLOWALIASLOOP = true;
                                 return "";
                             case "disallow":
-                                this.ALLOWALIASLOOP = true;
+                                this.ALLOWALIASLOOP = false;
                                 return "";
                             default:
                                 return "Unregistered parameter '"+params[1]+"' ; Use {allow, disallow}\n";
@@ -120,10 +121,83 @@ class dbg_cmd {
                         return "? ON "+params.length+" aliasloop\n";
                 }
                 return "";
+              case "clickerdisable":
+                switch(params.length){
+                    case 1:
+                        return "Insufficient Parameters.\n";
+                    case 2:
+                        switch(params[1]){
+                            case "allow":
+                                this.protect_clickerdisable = false;
+                                return "";
+                            case "disallow":
+                                this.protect_clickerdisable = true;
+                                return "";
+                            default:
+                                return "Unregistered parameter '"+params[1]+"' ; Use {allow, disallow}\n";
+                        }
+                    default:
+                        return "? ON "+params.length+" aliasloop\n";
+                }
+                return "";//this.protect_clickerdisable
             default: 
                 return "Service or method '"+params[0]+"' not found in usage entry registry.\n";//kind of a decepticon, for now. 
         }
         return "[Command(pmc)] ERROR: BAD RETURN 0 ON PARAMETER BUFFER "+JSON.stringify(params)+".\n";
+    }),
+    clicker: new this.Command("clicker", (params) => {
+        if(params.length===0){
+          return "Usage: clicker [enable/disable]\nTurns on or off the DebugIO Prompt on click\n";
+        }
+        switch(params[0]){
+          case "enable":
+            DebugIO.useclicker = true;
+            return "";
+          case "disable":
+            if(params.includes("force")){
+              DebugIO.useclicker = false;
+              Console.write("Unsafe disable forced: disable DebugIO Prompt on click.\n");
+              return "";
+            }else if(DebugIO.useclicker && this.protect_clickerdisable){
+              return "ERROR\nDangerous disable detected -- this functionality is disallowed. Use 'pmc clickerdisable allow' to remove protection lock;\nAlternatively, you may use `clicker disable force` to force !!! DANGEROUS !!! disable (which may, in turn, render your system impossible to interact with in some cases).\n"
+            }
+            DebugIO.useclicker = false;
+            return "";
+          default:
+            return "Unspecified argument: "+params[0]+"\n";
+        }
+        return "[Command(clicker] Error: Unreachable return\n";
+    }),
+    ejs: new this.Command("ejs", (params) => {
+      let str = "";
+      let preout = "";
+      if(params.length === 0){
+          return "Method for semisafely passing JavaScript strings to eval() [still fully able to modify any system object and run arbitrary code]\nParameters are adjoined into a single string, then evaluated.\nUsage: ejs [valid string] [valid string] ...\nUsage: ejs directprompt -- will bypass string adjoinment and allow direct script pasting via prompt() box method\nParametric Failsafe: ejs [valid JavaScript string with no spaces, will be evaluated BEFORE full string]\n";
+        }else if(params[0] === "directprompt"){
+          str = prompt();
+          if(str === null){
+            return "Evaluation canceled.\n"
+          }
+        }else{
+          //str = params.join(";");
+          for(let i=0;i<params.length;i++){
+            try{
+              str+=JSON.parse(params[i]);
+            }catch(e){
+              try{
+                str+=eval(params[i]);
+              }catch(e2){
+                preout+="[ejs Parameter Error] '"+params[i]+"' unable to be parsed by JSON.parse: "+e.msg+" ; Additional error (e2): "+e2.msg+"\n";
+              }
+            }
+          }
+        }
+        try{
+          return preout+eval(str)+"\n";
+        }catch(e){
+          return "[ejs Evaluation Error] "+e.msg+"\n";
+        }
+        return "[ejs] Unreachable return.\n";
     }),
     X: new this.Command("X", (params) => {
         return "";
@@ -241,3 +315,19 @@ dbg_cmd.framediverter = "droporcontinue";
 //dbg_cmd.framediverterbuffer = [Date.now()+10000, [null, []], [null, []], "default start"];
 dbg_cmd.framediverterbuffer = [Date.now()+10000, ["fdpaddedeval", [null, "fdcaterr", "dbg_program.dbgnull=true;"]], [null, []], "Wakelock & Graphical Test"];
 dbg_cmd.ip_c.ResetFile();
+
+class DebugIO {
+  static useclicker = true;
+}
+
+document.addEventListener('click', async () => {
+  if(DebugIO.useclicker){
+    let dbglin = Teletype.tty_pip[2].slice(0,Teletype.tty_pip[2].length+Teletype.curoff)+"_"+Teletype.tty_pip[2].slice(Teletype.tty_pip[2].length+1+Teletype.curoff,Teletype.tty_pip[2].length);
+    let buffer = prompt("(DebugIO Prompt can be enabled/disabled with dbg_cmd command `clicker [enable/disable]` -- only works in debug command line)\n"+dbglin+"\nOK: Submit + Enter ; Cancel: Backspace");
+    if(buffer === null){
+      Keyboard.keybuffer.push("Backspace");
+    }else{
+      Keyboard.keybuffer = Keyboard.keybuffer.concat((buffer+"\n").split(""));
+    }
+  }
+});
