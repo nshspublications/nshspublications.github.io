@@ -19,14 +19,14 @@
 body {
     font-family: 'System', Courier, monospace;
     background-color: black;
-    touch-action: pan-x pan-y; 
+    touch-action: none; 
     -webkit-user-select: none; /* Safari */
     user-select: none; 
     overscroll-behavior-y: none;
 }
 
 html {
-    touch-action: pan-x pan-y; 
+    touch-action: none; 
     overscroll-behavior-y: none;
 }
 
