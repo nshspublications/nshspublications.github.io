@@ -20,10 +20,19 @@ body {
     font-family: 'System', Courier, monospace;
     background-color: black;
     touch-action: pan-x pan-y; 
+    -webkit-user-select: none; /* Safari */
+    user-select: none; 
 }
 
 html {
     touch-action: pan-x pan-y; 
+}
+
+:root {
+  --titlebar-area-x: 0px;
+  --titlebar-area-y: 0px;
+  --titlebar-area-width: 100%;
+  --titlebar-area-height: 0px;
 }
 
 p {

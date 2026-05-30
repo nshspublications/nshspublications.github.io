@@ -199,6 +199,26 @@ class dbg_cmd {
         }
         return "[ejs] Unreachable return.\n";
     }),
+    ctxmhack: new this.Command("ctxmhack", (params) => {
+        if(params.length===0){
+          return "Usage: ctxmhack [enable/disable]\nTurns on or off the DebugIO Alert Dialog + Inspect Tip on right click\n";
+        }
+        switch(params[0]){
+          case "enable":
+            DebugIO.ctxmhack = true;
+            return "";
+          case "disable":
+            DebugIO.ctxmhack = false;
+            return "";
+          default:
+            return "Unspecified argument: "+params[0]+"\n";
+        }
+        return "[Command(ctxmhack] Error: Unreachable return\n";
+    }),
+    clear: new this.Command("clear", (params) => {
+      Teletype.clear();  
+      return "";
+    }),
     X: new this.Command("X", (params) => {
         return "";
     }),
@@ -206,6 +226,8 @@ class dbg_cmd {
   static aliasreg = {
     "list-packages": new this.Alias("list-packages", "lscr"),
     "reload": new this.Alias("reload", "rl"),
+    "clr": new this.Alias("clr", "clear"),
+    "cls": new this.Alias("cls", "clear"),
   }
   static RegisterCommand(name, callback){
     console.log(this);
@@ -249,7 +271,8 @@ class dbg_cmd {
         let cmd = this.ip_c.file.split("\n").join("");
         let ps = this.prefstr();
         this.ip_c.ResetFile();
-        Teletype.out_sw(["",ps+cmd+"\n"+this.process_cmd(cmd),""]);
+        Teletype.out_sw(["",ps+cmd+"\n",""]);
+        Teletype.out_sw(["",this.process_cmd(cmd),""]);
       }
       Teletype.set_post(this.prefstr()+this.ip_c.file);
       Teletype.set_curoff(this.ip_c.curoff);
@@ -318,6 +341,7 @@ dbg_cmd.ip_c.ResetFile();
 
 class DebugIO {
   static useclicker = true;
+  static ctxmhack = true;
 }
 
 document.addEventListener('click', async () => {
@@ -329,5 +353,16 @@ document.addEventListener('click', async () => {
     }else{
       Keyboard.keybuffer = Keyboard.keybuffer.concat((buffer+"\n").split(""));
     }
+  }
+});
+
+document.addEventListener('contextmenu', (event) => {
+  // Prevent the default browser context menu
+  event.preventDefault(); 
+  
+  //console.log('Right-click intercepted!');
+  if(DebugIO.ctxmhack){
+    Console.write("Debug helper:\nControl + Shift + J \t[Windows]\nCommand + Option + J \t[macOS]\n");
+    alert("You can successfully execute key combinations from here\nControl + Shift + J \t[Windows]\nCommand + Option + J \t[macOS]\n");
   }
 });
