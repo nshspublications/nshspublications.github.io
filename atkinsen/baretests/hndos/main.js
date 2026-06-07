@@ -71,4 +71,15 @@ k_framemgr.lastcalltime = Date.now();
 },1000/60);*/
 
 //k_framemgr.rafret = requestAnimationFrame(k_framemgr.frame);
+
+/*document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    k_framemgr.isRunning = false;
+    cancelAnimationFrame(animationFrameId);
+  } else {
+    k_framemgr.isRunning = true;
+    k_framemgr.rafret = Calipers2.setframecall(k_framemgr.frame);
+  }
+});*/
+
 k_framemgr.rafret = Calipers2.setframecall(k_framemgr.frame);

@@ -83,7 +83,7 @@ class Calipers2 {
         }
     }
     static TeletypeObject = class {
-        constructor(etty, ectty, ectty_cur){
+        constructor(etty, ectty, ectty_cur, ghostp){
             this.tty = etty;
             this.ctty = ectty;
             this.ctty_cur = ectty_cur;
@@ -100,6 +100,8 @@ class Calipers2 {
             this.ghoststack = [];
     
             this.redirectdelete = false;
+
+            this.ghostp = ghostp;
         }
         set_curoff(n){
             this.curoff=n;
@@ -194,6 +196,22 @@ class Calipers2 {
             this.ctty_cur.style.fontFamily = s;
             this.remember_font = s;
         }
+        get_space_size(){
+            document.getElementById("ghostp").textContent = " ";
+            const p = this.ghostp;
+
+            const dimensions = p.getBoundingClientRect();
+
+            return [dimensions.width, dimensions.height];
+        }
+        get_tab_size(){
+            document.getElementById("ghostp").textContent = "\t";
+            const p = this.ghostp;
+
+            const dimensions = p.getBoundingClientRect();
+
+            return [dimensions.width, dimensions.height];
+        }
     }
     static Teletype;
     static GraphicsObject = class {
@@ -208,10 +226,11 @@ class Calipers2 {
         }
         autoresize(){
             if(self.innerWidth === this.width && self.innerHeight === this.height){
-                return;
+                return false;
             }
             this.width = this.canvas.width = self.innerWidth;
             this.height = this.canvas.height = self.innerHeight;
+            return true;
         }
         setVisibility(b){
             this.isVisible = !(this.canvas.hidden = !b);
@@ -372,7 +391,7 @@ class Calipers2 {
 Calipers2.Graphics = new Calipers2.GraphicsObject(document.getElementById("canvas_element"));
 var Graphics = Calipers2.Graphics; //Legacy
 console.log(Calipers2.Graphics);
-Calipers2.Teletype = new Calipers2.TeletypeObject(document.getElementById("tty"),document.getElementById("ctty"),document.getElementById("ctty_cur"));
+Calipers2.Teletype = new Calipers2.TeletypeObject(document.getElementById("tty"),document.getElementById("ctty"),document.getElementById("ctty_cur"),document.getElementById("ghostp"));
 var Teletype = Calipers2.Teletype; //Legacy
 Calipers2.Teletype.clear();
 

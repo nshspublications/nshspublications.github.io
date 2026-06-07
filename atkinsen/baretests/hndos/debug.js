@@ -10,6 +10,9 @@ class dbg_program {
         Teletype.out_sw(["","\n[Console] "+Console.Streams.Short+"\n",""]);
         Console.clear();
     }
+    this.routine();
+  }
+  static routine(){
     Graphics.autoresize();
     Graphics.fill([255/4,0,0]);
     Graphics.background();
@@ -23,13 +26,24 @@ class dbg_program {
 }
 
 class dbg_cmd {
+  static effectivewidth = 55;
+  static realtablength = Math.ceil(Teletype.get_tab_size()[0]/Teletype.get_space_size()[0]);
   static ip_c = new Calipers2.PromptStream();
   static ALLOWALIASLOOP = false;
   static protect_clickerdisable = true;
   static Command = class {
-    constructor(name, callback){
+    static HelpPage = class {
+      constructor(purpose = "", usage = "", extra = "", disable = false){
+        this.purpose = purpose;
+        this.usage = usage;
+        this.extra = extra;
+        this.disable = disable || purpose.length+usage.length+extra.length === 0;
+      }
+    }
+    constructor(name, callback, helper = new dbg_cmd.Command.HelpPage()){
       this.name = name;
       this.callback = callback;
+      this.helper = helper;
     }
     main(parameters){
       return this.callback(parameters);
@@ -46,25 +60,173 @@ class dbg_cmd {
       return "Debug test; parameters:\n"+JSON.stringify(params)+"\n";
     }),
     help: new this.Command("help", (params)=>{
+      //let maxlen = 27;
+      let minlen = 26;
+      let faketab = "    "; //half-length
       //debug message dbg
-      return "Help command not yet implemented.\n";
-    }),
+      //return "Help command not yet implemented.\n";
+      //return "dbg\n";
+      switch(params.length){
+        case 0:
+          let aliases = [];
+          let aliasesto = [];
+          for(const k in dbg_cmd.aliasreg){
+            aliases.push(dbg_cmd.aliasreg[k].to);
+            aliasesto.push(dbg_cmd.aliasreg[k].from);
+          }
+          console.log(aliases, aliasesto);
+          let out = "Use `help [command]` for help with any listed command\nAvailable commands: (use `help more` for expanded version)\n";
+          let cycle = 0;
+          //dbg_cmd.effectivewidth = 55;
+          let clen = Math.max(1,Math.floor(dbg_cmd.effectivewidth/minlen));
+          let span = Math.max(1,Math.floor(dbg_cmd.effectivewidth/clen)-1);
+          console.log(dbg_cmd.effectivewidth/minlen,dbg_cmd.effectivewidth/clen);
+          let spanstr = "";
+          for(let i=0;i<span;i++){
+            spanstr+=" ";
+          }
+          console.log(clen, span);
+          for(const k in dbg_cmd.cmdreg){
+            //out+=k+"\n";//dbg
+            //console.log(k);
+            if(dbg_cmd.cmdreg[k].helper.disable){
+              continue;
+            }
+            let name = dbg_cmd.cmdreg[k].name;
+            if(aliases.includes(name)){
+              for(let i=0;i<aliases.length;i++){
+                if(aliases[i] === dbg_cmd.cmdreg[k].name){
+                  name += "/"+aliasesto[i];
+                }
+              }
+            }
+            let namehead = name+" ";
+            for(let i=0;namehead.length%dbg_cmd.realtablength!==0;i++){
+              namehead+=" ";
+            }
+            //let rnhl = Math.ceil((name+" ").length/dbg_cmd.realtablength)*dbg_cmd.realtablength;
+            let purp = dbg_cmd.cmdreg[k].helper.purpose;
+            let pe = (
+              namehead
+              +dbg_cmd.cmdreg[k].helper.usage+faketab
+              +purp
+              //+dbg_cmd.cmdreg[k].helper.extra
+              //+"\n"
+            );
+            //let tabamt = pe.split("\t").length-1;
+            //let tabspace = tabamt*(dbg_cmd.realtablength-1);
+            //let realpelen = rnhl+purp.length;
+            //let discrep = realpelen-pe.length;
+            //console.log(discrep);
+            let rpe = pe.slice(0, span-2)+spanstr.slice(Math.min(span, pe.length)); //shooting for span-2
+            out += rpe;
+            cycle++;
+            if(cycle === clen){
+              out += "\n";
+              cycle=0;
+            }else{
+              out += "  ";
+            }
+          }
+          return out+"\n";
+        case 1:
+          if(params[0] === "more"){
+            let aliases = [];
+            let aliasesto = [];
+            for(const k in dbg_cmd.aliasreg){
+              aliases.push(dbg_cmd.aliasreg[k].to);
+              aliasesto.push(dbg_cmd.aliasreg[k].from);
+            }
+            console.log(aliases, aliasesto);
+            let out = "Use `help [command]` for help with any listed command\nAvailable commands: \n";
+            for(const k in dbg_cmd.cmdreg){
+              //out+=k+"\n";//dbg
+              //console.log(k);
+              if(dbg_cmd.cmdreg[k].helper.disable){
+                continue;
+              }
+              let name = dbg_cmd.cmdreg[k].name;
+              if(aliases.includes(name)){
+                for(let i=0;i<aliases.length;i++){
+                  if(aliases[i] === dbg_cmd.cmdreg[k].name){
+                    name += "/"+aliasesto[i];
+                  }
+                }
+              }
+              out+= (
+                name+"\t\t"
+                +dbg_cmd.cmdreg[k].helper.usage+"\n\t"
+                +dbg_cmd.cmdreg[k].helper.purpose+"\n\t"
+                //+dbg_cmd.cmdreg[k].helper.extra
+                //+"\n"
+              );
+              if(dbg_cmd.cmdreg[k].helper.extra.length !== 0){
+                out += dbg_cmd.cmdreg[k].helper.extra
+              }
+              out += "\n";
+            }
+            return out;
+            //break;
+          }
+        default:
+          return "";
+      }
+
+      return "Error: impossible end @ cmdreg.help\n";
+    }, new dbg_cmd.Command.HelpPage(
+      "Retrieve helpful information about built-in commands",
+      "help [command (optional)]",
+      "Some commands may not be listed here, due to absent help page registration. Use `lscr` for a full list of commands.",
+    )),
     lscr: new this.Command("lscr", (params)=>{
       //return JSON.stringify(this.cmdreg)+"\n";
       let out = "";
       let verbose = params.includes("-v") || params.includes("--verbose") || params.includes("v");
       out += "Commands:\n";
+      let off = 0;
+      let line = "";
+      //let commit = "";
       for(const k in this.cmdreg){
-        out += this.cmdreg[k].name;
+        let commit = "";
+        commit += this.cmdreg[k].name;
         //console.log(this.cmdreg[k].callback);
         if(verbose){
-          out+="\n"+(this.cmdreg[k].callback.toString());
+          commit+="\n"+(this.cmdreg[k].callback.toString());
         }
-        out+="\n";
+        //out+="\n";
+        if(verbose){
+          out += commit+"\n";
+        }else{
+          commit+=" ";
+          while(commit.length%8!==0){
+            commit+=" ";
+          }
+          if(line.length+commit.length >= dbg_cmd.effectivewidth){
+            out+=line+"\n"+commit;
+            line="";
+            commit="";
+          }else{
+            line+=commit;
+            commit="";
+          }
+        }
       }
-      out += "Aliases:\n[k]\t\tfrom\t\tto\n";
+      if(out.charAt(out.length-1)!=="\n"){out+="\n"}
+      out += "Aliases:\n[k]             from            to\n";
       for(const k in this.aliasreg){
-        out += k+": "+this.aliasreg[k].from+"\t"+this.aliasreg[k].to+"\n";
+        let line = k+": "
+        while(line.length%16!==0){
+          line+=" ";
+        }
+        line += this.aliasreg[k].from+" ";
+        while(line.length%16!==0){
+          line+=" ";
+        }
+        line+=this.aliasreg[k].to;
+        while(line.length%16!==0){
+          line+=" ";
+        } 
+        out += line+"\n";
       }
       return out;
     }),
@@ -77,14 +239,22 @@ class dbg_cmd {
         }
         this.aliasreg[params[0]] = new this.Alias(params[0], params[1]);
         return "";
-    }),
+    }, new dbg_cmd.Command.HelpPage(
+      "Register an alias",
+      "alias [new entry] []",
+      "Aliases allow one command to be referenced by multiple names",
+    )),
     unalias: new this.Command("unalias", (params)=>{
         if(params.length!==1){
             return "[unalias] Strange parameter length ("+params.length+") expected (1).\n"
         }
         delete this.aliasreg[params[0]];
         return "";
-    }),
+    }, new dbg_cmd.Command.HelpPage(
+      "Deregister an alias",
+      "unalias [alias]",
+      "Warning: can break alias chains (if you don't know, you don't need to, but only delete aliases you were responsible for creating)",
+    )),
     pmc: new this.Command("pmc", (params) => {
         //return "Not yet implemented.\n";//debug
         if(params.length === 0){
@@ -219,7 +389,11 @@ class dbg_cmd {
     clear: new this.Command("clear", (params) => {
       Teletype.clear();  
       return "";
-    }),
+    }, new dbg_cmd.Command.HelpPage(
+      "Clear screen",
+      "clear",
+      ""
+    )),
     font: new this.Command("font", (params) => {
       if(params.length===0){
         return "Change teletype font\nUsage: font [font name]\n";
@@ -234,9 +408,22 @@ class dbg_cmd {
       Teletype.curchar = (SysLib.StrMan.CoerceStringyParameter(params[0]));
         return "";
     }),
+    bfgfxt: new this.Command("bfgfxt", (params) => {
+        dbg_cmd.framediverter = "EXTERN_C";
+        dbg_cmd.framediverterbuffer = ["dbg_program", "routine", []];
+        return "";
+    }, new dbg_cmd.Command.HelpPage(
+      "Boot into the BrainF- Interpreter Graphical Test debug application",
+      "bfgfxt",
+      "This application uses a low-level execution paradigm, and SHOULD NOT be run if any execution context higher than this debug console is actively running, as runtime coordination errors are liable to occur."
+    )),
     X: new this.Command("X", (params) => {
         return "";
-    }),
+    }, new dbg_cmd.Command.HelpPage(
+      "Placeholder command",
+      "X",
+      "(Extra text)"
+    )),
   };
   static aliasreg = {
     "list-packages": new this.Alias("list-packages", "lscr"),
@@ -247,6 +434,11 @@ class dbg_cmd {
   static RegisterCommand(name, callback){
     console.log(this);
     this.cmdreg[name]=new this.Command(name, callback);
+  }
+  static GetTTYSizeInChars(){
+    //Warning: only works with monospace fonts
+    let char = Teletype.get_space_size();
+    return [Math.floor(window.innerWidth/char[0] + 0.09), Math.floor(window.innerHeight/char[1] + 0.09)];
   }
   static drive = null;
   static prefstr(){
@@ -262,8 +454,41 @@ class dbg_cmd {
   }
   static framediverter = null;
   static framediverterbuffer = [];
+  static fdstack = [];
   static flushsystemconsole = true;
+  static push_fd(diverter, diverterbuffer){ //returns new process spot
+    this.fdstack.push([this.framediverter, this.framediverterbuffer]);
+    this.framediverter = diverter;
+    this.framediverterbuffer = diverterbuffer;
+    return this.fdstack.length-1;
+  }
+  static pop_fd(){ //returns popped process spot
+    let p = this.fdstack.pop();
+    this.framediverter = p[0];
+    this.framediverterbuffer = p[1];
+    return this.fdstack.length;
+  }
+  static PFDP_E_dbgmesg([message]){
+    Console.write(message);
+    return this.pop_fd();
+  }
+  static EXTERN_F([funccode, buffer]){
+    try{return eval(funccode)(buffer);}catch(e){
+      Console.write("[EXTERN_F] Error with arguments ("+JSON.stringify([funccode, buffer])+"): "+e.msg+"\n");
+    }
+  }
+  static EXTERN_C([classname, funcname, buffer]){
+    //console.log(eval(classname)[funcname]);
+    try{return eval(classname)[funcname](buffer);}catch(e){
+      Console.write("[EXTERN_C] Error with arguments ("+JSON.stringify([classname, funcname, buffer])+"): "+e.msg+"\n");
+    }
+  }
+  static TTYSize = [null,null];
   static frame(){
+    if(Graphics.autoresize()){
+      this.TTYSize = this.GetTTYSizeInChars();
+      this.effectivewidth = this.TTYSize[0];
+    }
 
     if(this.flushsystemconsole && Console.Streams.Short !== ""){
         Teletype.out_sw(["","\n[Console] "+Console.Streams.Short+"\n",""]);
@@ -309,7 +534,10 @@ class dbg_cmd {
           }
           return this.process_cmd(([realcmd].concat(cmd.slice(1,cmd.length))).join(" "), looptracker.concat([cmd[0]]));
         }else if(this.cmdreg[cmd[0]] !== undefined){
-          return this.cmdreg[cmd[0]].callback(cmd.slice(1,cmd.length));
+          try{return this.cmdreg[cmd[0]].callback(cmd.slice(1,cmd.length));}catch(e){
+            console.error(e.msg, e);
+            return e.msg+"\n";
+          }
         }else{
           return "Command '"+cmd[0]+"' does not exist in registry.\nCommand 'lscr' will list registry contents, command 'help' will provide general assistance.\n";
         }
@@ -370,6 +598,7 @@ document.addEventListener('click', async () => {
       Keyboard.keybuffer = Keyboard.keybuffer.concat((buffer+"\n").split(""));
     }
   }
+  //PushTools.dbgpush();
 });
 
 document.addEventListener('contextmenu', (event) => {
@@ -378,7 +607,7 @@ document.addEventListener('contextmenu', (event) => {
   
   //console.log('Right-click intercepted!');
   if(DebugIO.ctxmhack){
-    Console.write("Debug helper:\nControl + Shift + J \t[Windows]\nCommand + Option + J \t[macOS]\n");
-    alert("You can successfully execute key combinations from here\nControl + Shift + J \t[Windows]\nCommand + Option + J \t[macOS]\n");
+    Console.write("Debug helper:\nControl + Shift + J \t[Windows]\nCommand + Option + J \t[macOS]\n\nControl/Command + R can refresh page from alert box\n");
+    alert("You can successfully execute key combinations from here\nControl + Shift + J \t[Windows]\nCommand + Option + J \t[macOS]\n\nControl/Command + R can refresh page");
   }
 });
