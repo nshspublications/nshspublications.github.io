@@ -28,6 +28,7 @@ const APP_STATIC_RESOURCES = [
   "./deviceinit.js",
   "./notifications.js",
   "./bios.js",
+  "./basicprograms.js",
 ];
 
 const CACHE_NAME = `iclOS-${VERSION}`;
