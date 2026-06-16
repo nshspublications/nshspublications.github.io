@@ -29,6 +29,7 @@ const APP_STATIC_RESOURCES = [
   "./notifications.js",
   "./bios.js",
   "./basicprograms.js",
+  "./gsnicreader.js",
 ];
 
 const CACHE_NAME = `iclOS-${VERSION}`;

@@ -1,4 +1,10 @@
 class BIOS {
+    static Boot = class {
+        
+    }
+    static Kernel = class {
+
+    }
     static Keyboard = class {
 
     }
@@ -6,7 +12,12 @@ class BIOS {
         
     }
     static Teletype = class {
-        
+        static Cursor = class {
+
+        }
+        static Color = class {
+
+        }
     }
     static Graphics = class {
         

@@ -15,6 +15,26 @@
     <p style="color: white;" id="tty"></p>
     <p id="ghostp"></p>
 
+    <script>
+      var WARN = ""; 8080; 8090;
+    let f = ()=>{
+      console.error("WARNING: For local execution, this program should, in the best-case scenario, be running from localhost: port 8090; alternatively, counting up by 2 from 8091 (, 8093, 8095, 8097, 8099, 8101, 8103, etc...)");
+    };
+    if(
+      WARN === 0 || WARN === 8080 || WARN === undefined || WARN === "VARIABLE_ON"){
+        f();
+    }else if([8081,true,false].includes(WARN) || WARN === "VARIABLE_OFF"){
+      try{
+        f();
+      }catch(e){
+        console.log(e.msg);
+      }
+    }else{
+      throw f();
+    }
+    </script>
+
+    <script type="module" src="gsnicreader.js"></script>
     <script src="tools.js" defer></script>
     <script src="lcalipers2.js" defer></script>
     <script src="bios.js"></script>

@@ -1,0 +1,22 @@
+GoogleSuite Shuffle v2.0
+Service Network Information Center
+HNet Corporation
+H A C K E R S  N E T W O R K Associated
+
+::GSS2.GSNIC;
+
+ZERO: [
+    ENTRY(f),
+    EXIT(s),
+    PROTOC(s)
+]
+
+EXIT(s): {
+
+}
+
+PROTOC(s): {
+
+}
+
+ENTRY(f): .
