@@ -83,7 +83,7 @@ class Calipers2 {
         }
     }
     static TeletypeObject = class {
-        constructor(etty, ectty, ectty_cur, ghostp){
+        constructor(etty, ectty, ectty_cur, ghostp, grouper, ttyspan){
             this.tty = etty;
             this.ctty = ectty;
             this.ctty_cur = ectty_cur;
@@ -102,6 +102,9 @@ class Calipers2 {
             this.redirectdelete = false;
 
             this.ghostp = ghostp;
+
+            this.grouper=grouper;
+            this.ttyspan=ttyspan;
         }
         set_curoff(n){
             this.curoff=n;
@@ -194,6 +197,9 @@ class Calipers2 {
             this.tty.style.fontFamily = s;
             this.ctty.style.fontFamily = s;
             this.ctty_cur.style.fontFamily = s;
+            this.ghostp.style.fontFamily = s;
+            this.grouper.style.fontFamily = s;
+            this.ttyspan.style.fontFamily = s;
             this.remember_font = s;
         }
         get_space_size(){
@@ -391,7 +397,7 @@ class Calipers2 {
 Calipers2.Graphics = new Calipers2.GraphicsObject(document.getElementById("canvas_element"));
 var Graphics = Calipers2.Graphics; //Legacy
 console.log(Calipers2.Graphics);
-Calipers2.Teletype = new Calipers2.TeletypeObject(document.getElementById("tty"),document.getElementById("ctty"),document.getElementById("ctty_cur"),document.getElementById("ghostp"));
+Calipers2.Teletype = new Calipers2.TeletypeObject(document.getElementById("tty"),document.getElementById("ctty"),document.getElementById("ctty_cur"),document.getElementById("ghostp"),document.getElementById("grouper"),document.getElementById('teletypespan'));
 var Teletype = Calipers2.Teletype; //Legacy
 Calipers2.Teletype.clear();
 

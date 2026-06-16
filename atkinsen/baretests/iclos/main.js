@@ -1,14 +1,20 @@
+BIOS.Teletype.Quick.Print("iclOS CrashBoot\nCoreOS Research Group / Atkinsen Institute / A&C QDOS Project\n   H A C K E R S  N E T W O R K Associated.\n");
+
 if ("serviceWorker" in navigator) {
+  BIOS.Print("[sw] Registering sw...\n");
   navigator.serviceWorker.register("service-worker.js").then(
     (registration) => {
+      BIOS.Teletype.Quick.Print("[sw] Service worker registration successful : "+JSON.stringify(registration)+"\n");
       console.log("Service worker registration successful:", registration);
     },
     (error) => {
+      BIOS.Teletype.Quick.Print("[sw] Service worker registration failed : "+JSON.stringify(error)+"\n");
       console.error(`Service worker registration failed: ${error}`);
     },
   );
 } else {
   console.error("Service workers are not supported.");
+  BIOS.Teletype.Quick.Print("[sw] Service workers are not supported . "+JSON.stringify(navigator)+"\n");
 }
 
 Teletype.set_curoff(0);
@@ -48,28 +54,22 @@ Teletype.set_curoff(0);
   )
 ));*/
 
-class k_framemgr {
-  static rafret;
-  static lastcalltime = 0;
-  static BestFramerateApprox = 0;
-  //static SIGINT = false;
-  static frame(){
-    if(Keyboard.keysdown["Control"] || Keyboard.keysdown["Meta"]){
-      //console.log("C")
-      if(Keyboard.keybuffer.includes("C") || Keyboard.keybuffer.includes("c")){
-        //SIGINT
-        DebugIO.SIGNAL(1);
-      }
-    }
-    k_framemgr.BestFramerateApprox = 1000/(Date.now() - k_framemgr.lastcalltime);
-    //dbg_program.frame();//dbg
-    // JobManager.frame();
+BIOS.Print("Initializing k_framemgr\n");
 
-    k_framemgr.lastcalltime=Date.now();
-  }
-}
+//k_framemgr{}
+k_framemgr.call = (b) => {
+  //console.log(Calipers2.Keyboard.keybuffer);
+  BIOS.Keyboard.ClearBuffer();
+  return 1+b.length
+};
 
 k_framemgr.lastcalltime = Date.now();
+
+BIOS.Print("[k_framemgr] : "
+  +k_framemgr.lastcalltime+"  "+
+  "[Main]:"+k_framemgr.call
+  +"\n"
+);
 
 //Teletype.set_font("Terminus");
 //Teletype.curchar = "_";
@@ -92,7 +92,23 @@ k_framemgr.lastcalltime = Date.now();
 
 k_framemgr.rafret = Calipers2.setframecall(k_framemgr.frame);
 
+BIOS.Print("k_framemgr.rafret = "+k_framemgr.rafret+"\n");
+
 Teletype.curchar = "\u2593";
-Teletype.clear();
+//Teletype.clear();
 Teletype.set_post("");
 Teletype.refresh();
+
+//k_framemgr.SetMethod((b)=>BootStrap.FrameUIServer.frame([0,"\t\n",[null,b]]));
+
+// BIOS.Frame.LINK = BootStrap.FrameUIServer;
+// BIOS.Frame.METHOD = "frame";
+// BIOS.Frame.BUFFER = [0,"\t\n",[null,-255,BIOS.Frame.SUBBUFFER]];
+// BIOS.Frame.SUBBUFFER = [];
+
+// k_framemgr.SetMethod((b)=>{
+//   BIOS.Frame.SUBBUFFER = b;
+//   BIOS.Frame.LINK[BIOS.Frame.METHOD](BIOS.Frame.BUFFER);
+// });
+
+BootStrap.FrameUIServer.init();

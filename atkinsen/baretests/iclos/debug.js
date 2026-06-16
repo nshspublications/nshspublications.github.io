@@ -3,7 +3,8 @@ class DebugIO {
   static useclicker = true;
   static ctxmhack = true;
   static signalcallbacks = [
-    (c)=>{dbg_cmd.SIGNAL(c)}
+    //(c)=>{dbg_cmd.SIGNAL(c)}
+    (c)=>{BIOS.SIGNAL(c)}
   ];
   static SIGNAL(code){
     for(const k in this.signalcallbacks){

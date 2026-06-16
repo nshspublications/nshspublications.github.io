@@ -43,8 +43,9 @@ html {
 }
 
 p {
+        font-family: inherit;
         hyphens: none;
-        font-size: 120%;
+        font-size: 100%;
         position: absolute;
         overflow: hidden;
         color: white;

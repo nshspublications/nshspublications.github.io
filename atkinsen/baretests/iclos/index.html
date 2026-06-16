@@ -11,9 +11,14 @@
   <body>
     <canvas id="canvas_element" width="640" height="480" style="position: fixed;"></canvas>
 
-    <p><span style="color: transparent; background: black;" id="ctty"></span><span style="color: white; background: black;" id="ctty_cur"></span></p>
+        <p id="grouper" style=""><span style="color: transparent; background: black;" id="ctty"></span><span style="color: white; background: black;" id="ctty_cur"></span></p>
     <p style="color: white;" id="tty"></p>
+    
     <p id="ghostp"></p>
+
+
+    <span id="teletypespan" style="background-color: aqua;">
+      </span>
 
     <script>
       var WARN = ""; 8080; 8090;
@@ -27,7 +32,7 @@
       try{
         f();
       }catch(e){
-        console.log(e.msg);
+        console.warn(e.msg);
       }
     }else{
       throw f();
@@ -37,14 +42,15 @@
     <script type="module" src="gsnicreader.js"></script>
     <script src="tools.js" defer></script>
     <script src="lcalipers2.js" defer></script>
+    <script src="kframe.js"></script>
     <script src="bios.js"></script>
     <script src="kernel.js" defer></script>
-    <script src="basicprograms.js"></script>
     <script src="wakelock.js" defer></script>
     <script src="notifications.js" defer></script>
     <script src="deviceinit.js" defer></script>
     <script src="initramfs.js" defer></script>
     <script src="debug.js" defer></script>
+    <script src="basicprograms.js"></script>
     <script src="main.js" defer></script>
   </body>
 </html>
