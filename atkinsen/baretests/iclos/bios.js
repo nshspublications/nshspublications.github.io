@@ -5,6 +5,32 @@ class BasicPrograms { //helper positioning
 }
 
 class BIOS {
+    static Tools = class {
+        static BufferDriver(method){
+            return (buffer)=>{
+                let out = [];
+                for(const k in buffer){
+                    out.push(method(buffer[k]));
+                }
+                return out;
+            };
+        }
+    }
+    static StdIOField = class {
+        constructor(method_in, method_out){
+            this.mi = method_in;
+            this.mo = method_out;
+        }
+        in(buffer){
+            return this.mi(buffer);
+        }
+        out(buffer){
+            return this.mo(buffer);
+        }
+    }
+    static Selection = new BIOS.StdIOField(
+
+    );
     static Frame = class {
         // static LINK = BootStrap.FrameUIServer;
         // static METHOD = "frame";
@@ -36,7 +62,33 @@ class BIOS {
     }
     static Teletype = class {
         static Cursor = class {
-
+            static SetOffset(n){
+                Teletype.set_curoff(n);
+            }
+            static SetCursorChar(s){
+                Teletype.curchar = s;
+                Teletype.refresh();
+            }
+        }
+        static Write = class {
+            static Print_pre(s){
+                Teletype.out_sw([s,'','']);
+            }
+            static Print_in(s){
+                Teletype.out_sw(['',s,'']);
+            }
+            static Print_post(s){
+                Teletype.out_sw(['','',s]);
+            }
+            static Set_pre(s){
+                Teletype.set_pre(s);
+            }
+            static Set_in(s){
+                Teletype.set_in(s);
+            }
+            static Set_post(s){
+                Teletype.set_post(s);
+            }
         }
         static Color = class {
 
@@ -56,6 +108,9 @@ class BIOS {
     static Graphics = class {
         
     }
+    static Sound = class {
+
+    }
     static Storage = class {
 
     }
@@ -70,6 +125,22 @@ class BIOS {
     static SIGNAL(c){
         console.warn("SIGNAL:"+c+"\n");
         if(this.SIGNAL_COOLDOWN===0){BIOS.Print("\n dbg . SIGNAL("+c+")\n");this.SIGNAL_COOLDOWN = 1;}
+    }
+    static STDIO = class {
+        static Devices = {
+            Teletype: new BIOS.StdIOField(
+                (buffer)=>null, //null
+                /*(buffer)=>{
+                    let out = [];
+                    for(const k in buffer){
+                        out.push(BIOS.Teletype.Write.Print_in(buffer[k]));
+                    }
+                    return out;
+                }*/
+                BIOS.Tools.BufferDriver(BIOS.Teletype.Write.Print_in)
+            ),
+
+        };
     }
 }
 
@@ -149,7 +220,14 @@ class BootStrap {
             //default to first non-hidden option (restart)
             if(this.selection === -1){
                 //find first non-restricted selection
-                this.selection = 2; //debug default
+                //this.selection = 2; //debug default
+                this.selection = 0;
+                for(let i=0;i<BootStrap.Registration.Store.length;i++){
+                    if(BootStrap.Registration.Store[i].show && !(BootStrap.Registration.Store[i].desc.includes("\0"))){
+                        this.selection = i;
+                        break;
+                    }
+                }
                 this.timeawait = Date.now() + (1000*15); //15 seconds
 
                 BIOS.Print("\n{click anywhere on screen for PromptInput Keyboard Debug Utility access}\n*** [iclOS . iCLOpS UReE BootStrap ] CrashBoot BootStrapper BI/OShell Utility v1.0x ***\n\n\n\tSelect boot option from: \n\n");
@@ -317,6 +395,19 @@ BootStrap.Registration.Register( //debug
     )
 );
 
+/*BootStrap.Registration.Register(
+    new BootStrap.Registration.ExtShell(
+        "frestartxs",
+        BootStrap.FrameUIServer.RestartSubroutine,
+        "reboot",
+        ["reboot",
+            //"list"
+        ,] ,
+        false, //
+        "\0fakeReboot system (automatic/default option).\n"// "X"//no
+    )
+);*/
+
 BootStrap.Registration.Register(
     new BootStrap.Registration.ExtShell(
         "restartxs",
@@ -356,3 +447,7 @@ BootStrap.Registration.Register( //debug
 //k_framemgr.SetMethod();
 
 //k_framemgr.SetMethod((b)=>BootStrap.FrameUIServer.frame([0,"\t\n",[null,b]]))
+
+class BootLoader {
+    //for when a more advanced boot system is applicable
+}

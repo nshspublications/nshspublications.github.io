@@ -35,6 +35,18 @@ let sysjsprompt;
                 }
                 return out;
             },
+            "exit": (ob)=>{
+                BootStrap.FrameUIServer.RestartSubroutine.reboot();
+            },
+            "modules": (ob)=>{
+                return BasicPrograms.JSPrompt.prexecmodules;
+            },
+            "rl": (ob)=>{
+                return window.location.reload();
+            },
+            /*"": (ob)=>{
+
+            },*/
         };
         static enableprexec = true;
         static frame(buffer){
