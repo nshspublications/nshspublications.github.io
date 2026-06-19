@@ -25,3 +25,14 @@
         }
     ));
 }*/
+
+class VirtualDevices {
+    static BasicFloppy = class {
+        static Driver = class {
+
+        };
+        constructor(){
+
+        }
+    }
+}
