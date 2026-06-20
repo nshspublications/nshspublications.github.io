@@ -23,6 +23,9 @@ let sysjsprompt;
 {
     //JavaScript Prompt
     sysjsprompt = class JavaScriptPromptClass {
+        static last = "";
+        static next = "";
+        static arrowshift = false;
         static input = "";
         static cursor = 0;
         static temp = "";
@@ -61,6 +64,7 @@ let sysjsprompt;
                     this.dolong = true;
                     this.temp = "";
                 }else{
+                    this.last = this.input;
                     try{
                         this.cursor=0;
                         Teletype.set_curoff(0);
@@ -89,6 +93,7 @@ let sysjsprompt;
                         case 1:
                             continue;
                         default:
+                            //console.log(kb[i],this.last,this.input,this.next);//debug
                             switch(kb[i]){ //(newval x oldval)
                                 case "Backspace":
                                     this.input = this.input.slice(0,this.input.length+this.cursor-1)+this.input.slice(this.input.length+this.cursor,this.input.length);
@@ -104,6 +109,26 @@ let sysjsprompt;
                                     break;
                                 case "ArrowRight":
                                     this.cursor=Math.min(0,++this.cursor);
+                                    break;
+                                case "ArrowUp":
+                                    if(this.arrowshift){
+                                        this.input = this.last;
+                                    }else{
+                                        this.next = this.input;
+                                        this.input = this.last;
+                                        this.arrowshift = true;
+                                    }
+                                    break;
+                                case "ArrowDown":
+                                    if(this.arrowshift){
+                                        //this.next = this.input;
+                                        this.input = this.next;//
+                                        this.arrowshift = false;//
+                                    }else{
+                                        //this.next = this.input;
+                                        this.input = this.next;//
+                                        this.arrowshift = true;//
+                                    }
                                     break;
                                 default:
                             }
@@ -164,6 +189,12 @@ let sysjsprompt;
                                     break;
                                 case "ArrowRight":
                                     this.cursor=Math.min(0,++this.cursor);
+                                    break;
+                                case "ArrowUp":
+                                    //skipline
+                                    break;
+                                case "ArrowDown":
+                                    //skipline
                                     break;
                                 default:
                             }
