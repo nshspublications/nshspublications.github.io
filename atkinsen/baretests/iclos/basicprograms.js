@@ -44,8 +44,14 @@ let sysjsprompt;
             "modules": (ob)=>{
                 return BasicPrograms.JSPrompt.prexecmodules;
             },
-            "rl": (ob)=>{
+            "hrl": (ob)=>{
                 return window.location.reload();
+            },
+            "srl": (ob)=>{
+                BootStrap.FrameUIServer.RestartSubroutine.reboot();
+            },
+            "rl": (ob)=>{
+                try{return eval("srl();");}catch(e){return e.msg;}
             },
             /*"": (ob)=>{
 

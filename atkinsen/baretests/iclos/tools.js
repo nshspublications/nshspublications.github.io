@@ -184,4 +184,36 @@ class SysLib {
             this.ids[id] = undefined;
         }
     }
+    static ObtainExceptionTraceReport(){
+        let getStackTrace = function() {
+            var obj = {};
+            Error.captureStackTrace(obj, getStackTrace);
+            return obj.stack;
+        };
+        return getStackTrace();
+    }
+    static MemoryTool = class {
+        static LIFO = class{
+            constructor(){
+                this.mem = [];
+            }
+            get(){
+                return this.mem.pop();
+            }
+            send(buffer = null){
+                return this.mem.push(buffer);
+            }
+        }
+        static FIFO = class{
+            constructor(){
+                this.mem = [];
+            }
+            get(){
+                return this.mem.splice(0,1);
+            }
+            send(buffer = null){
+                return this.mem.push(buffer);
+            }
+        }
+    }
 }

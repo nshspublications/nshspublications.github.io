@@ -45,9 +45,15 @@ class BIOS {
 
     }
     static Kernel = class {
+        static ExecutionDeferenceSpecifier = class {
+            constructor(){
 
+            }
+        }
+        //.
     }
     static Keyboard = class {
+        static DirectDeviceLink = Calipers2.Keyboard;
         static ClearBuffer(){
             Calipers2.Keyboard.keybuffer = [];
         }
@@ -58,9 +64,11 @@ class BIOS {
         }
     }
     static Mouse = class {
-        
+        static DirectDeviceLink = Calipers2.Mouse;
+
     }
     static Teletype = class {
+        static DirectDeviceLink = Calipers2.Teletype;
         static Cursor = class {
             static SetOffset(n){
                 Teletype.set_curoff(n);
@@ -106,12 +114,15 @@ class BIOS {
         }
     }
     static Graphics = class {
-        
+        static DirectDeviceLink = Calipers2.Graphics;
+
     }
     static Sound = class {
+        static DirectDeviceLink = null;
 
     }
     static Storage = class {
+        static DirectDeviceLink = null;
 
     }
     static Interrupter = class {
@@ -188,6 +199,7 @@ class BootStrap {
         static Store = [
             //
         ];
+        static DefaultBootSelection = -1;
         static Register(blajaio){
             if(blajaio.meid === this.Store.length){
                 this.Store.push(blajaio);
@@ -196,10 +208,16 @@ class BootStrap {
             
             return 1; //Unknown Error
         }
+        static SetDefaultBootSelection(n){
+            //
+            BootStrap.FrameUIServer.selection = (this.DefaultBootSelection = n);
+            //console.log(this.DefaultBootSelection);
+            //console.log(BootStrap.FrameUIServer.selection);
+        }
     }
     static FrameUIServer = class {
         static timeawait = null; //automatic selection
-        static selection = -1;
+        static selection = BootStrap.Registration.DefaultBootSelection;
         static listbuffer = [0, "\t\n", null];
         static init(){
             //reinit
@@ -221,13 +239,18 @@ class BootStrap {
             if(this.selection === -1){
                 //find first non-restricted selection
                 //this.selection = 2; //debug default
-                this.selection = 0;
-                for(let i=0;i<BootStrap.Registration.Store.length;i++){
-                    if(BootStrap.Registration.Store[i].show && !(BootStrap.Registration.Store[i].desc.includes("\0"))){
-                        this.selection = i;
-                        break;
+                if(this.selection === BootStrap.Registration.DefaultBootSelection){
+                    this.selection = 0;
+                    for(let i=0;i<BootStrap.Registration.Store.length;i++){
+                        if(BootStrap.Registration.Store[i].show && !(BootStrap.Registration.Store[i].desc.includes("\0"))){
+                            this.selection = i;
+                            break;
+                        }
                     }
+                }else{
+                    this.selection = BootStrap.Registration.DefaultBootSelection;
                 }
+                
                 this.timeawait = Date.now() + (1000*15); //15 seconds
 
                 BIOS.Print("\n{click anywhere on screen for PromptInput Keyboard Debug Utility access}\n*** [iclOS . iCLOpS UReE BootStrap ] CrashBoot BootStrapper BI/OShell Utility v1.0x ***\n\n\n\tSelect boot option from: \n\n");
@@ -451,3 +474,6 @@ BootStrap.Registration.Register( //debug
 class BootLoader {
     //for when a more advanced boot system is applicable
 }
+
+BootStrap.Registration.SetDefaultBootSelection(6); //optinal default choice; set to -1 to undo force. 
+//console.log(BootStrap.FrameUIServer.selection); //debug

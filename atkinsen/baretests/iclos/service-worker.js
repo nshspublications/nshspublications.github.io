@@ -33,6 +33,17 @@ const APP_STATIC_RESOURCES = [
   "./info_gsnic.json",
   "./recoverycache.js",
   "./kframe.js",
+  "./magekernel.js",
+  "./fdm.js",
+
+
+  "./reference-legacy-employment_portal.html",
+
+  //test files
+  "./audcmdspec.on", 
+  "./thalorin",
+  "./Ivan.src.echx",
+  "./plans.txt",
 ];
 
 const CACHE_NAME = `iclOS-${VERSION}`;

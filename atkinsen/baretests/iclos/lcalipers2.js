@@ -392,6 +392,7 @@ class Calipers2 {
             return [this._pressed, this._down][method](keyval);
         }*/
     }
+    static Audio = null; //specifies that audio extenison is not present
 }
 
 Calipers2.Graphics = new Calipers2.GraphicsObject(document.getElementById("canvas_element"));
