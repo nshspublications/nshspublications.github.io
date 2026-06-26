@@ -253,9 +253,13 @@ let gpdbbs_reader;
                 "fetch_get_text",
                 this.readlanding,
                 (i, b) => {
+                    if(b.type === "Error"){
+                        console.log("Net Method Error:", b, i);
+                        return;
+                    }
                     let proc=false;
-                    if(gpdbbs_reader.file !== b){proc=true;}
-                    gpdbbs_reader.file=b;
+                    if(gpdbbs_reader.file !== b.value){proc=true;}
+                    gpdbbs_reader.file=b.value;
                     gpdbbs_reader.ready=true;
                     if(proc){
                         gpdbbs_reader.await_process_file = true;
@@ -271,7 +275,7 @@ let gpdbbs_reader;
     BasicPrograms["GPDBBS_Reader"] = gpdbbs_reader;
     BootStrap.Registration.Register(
         new BootStrap.Registration.ExtShell(
-            "",
+            "gpdbbs",
             BasicPrograms.GPDBBS_Reader,
             "frame",
             ["frame",],

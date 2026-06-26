@@ -36,6 +36,7 @@ const APP_STATIC_RESOURCES = [
   "./magekernel.js",
   "./fdm.js",
   "./fhload.js",
+  "./websafetyhandler.js",
 
 
   "./reference-legacy-employment_portal.html",
@@ -100,7 +101,8 @@ self.addEventListener("activate", (event) => {
   );
 });*/
 
-self.addEventListener('fetch', (event) => {
+/*self.addEventListener('fetch', (event) => {
+  console.log(event);
   event.respondWith(
     fetch(event.request)
       .then((networkResponse) => {
@@ -112,4 +114,115 @@ self.addEventListener('fetch', (event) => {
         return caches.match(event.request);
       })
   );
-}); //experimental code
+});*/ //experimental code
+
+self.addEventListener('fetch', (event) => {
+  //console.log("[sw] fetch event (.request):", event.request);//debug
+
+  const url = new URL(event.request.url);
+  /*
+  // Ignore Service Worker cache if there are URLSearchParams
+  if (url.search.length > 0) {
+    console.log("[sw] nzevreq", event.request);
+    event.respondWith(fetch(event.request));
+    return;
+  }*/
+
+  event.respondWith(
+    (async () => {
+        try {
+          // 1. Try to fetch from the network first
+          const networkResponse = await fetch(event.request);
+          // const cache = await caches.open(API_CACHE);
+          // await cache.put(event.request, networkResponse.clone());
+          return networkResponse;
+        } catch (error) {
+          // 2. If offline, strip query params to find the base page in the cache
+          const url = new URL(event.request.url);
+          url.search = ''; // Strips all parameters (e.g., ?id=123)
+          
+          const cachedResponse = await caches.match(url);
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          
+          // 3. Fallback to an offline fallback page if even the base isn't cached
+          return caches.match(event.request); //HIGHLY EXPERIMENTAL CODE !!! !!!
+        }
+      })()
+  );
+});
+
+async function findInCacheWithoutParams(cache, request) {
+  const requests = await cache.keys();
+  
+  // Find a cached request that matches the pathname (ignoring ?foo=bar)
+  const foundRequest = requests.find(cachedReq => {
+    const reqUrl = new URL(cachedReq.url);
+    const originalUrl = new URL(request.url);
+    return reqUrl.pathname === originalUrl.pathname;
+  });
+
+  return foundRequest ? cache.match(foundRequest) : undefined;
+}
+
+// reference for the above
+/*
+const API_CACHE = 'api-cache-v1';
+
+self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+
+  // Intercept ONLY your base API requests
+  if (url.pathname.startsWith('/api/v1/')) {
+    event.respondWith(
+      (async () => {
+        try {
+          // 1. Try the network first
+          const networkResponse = await fetch(event.request);
+          
+          // 2. Cache the successful response for offline/fallback
+          const cache = await caches.open(API_CACHE);
+          await cache.put(event.request, networkResponse.clone());
+          
+          return networkResponse;
+        } catch (error) {
+          // 3. Network failed: Fallback to the cache
+          const cache = await caches.open(API_CACHE);
+          
+          // CRITICAL: Strip query params to find the cached equivalent
+          const cachedResponse = await findInCacheWithoutParams(cache, event.request);
+          
+          return cachedResponse || Promise.reject(error);
+        }
+      })()
+    );
+  }
+});
+*/
+
+/*self.addEventListener('fetch', (event) => {
+  // Only intercept page navigations
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      (async () => {
+        try {
+          // 1. Try to fetch from the network first
+          return await fetch(event.request);
+        } catch (error) {
+          // 2. If offline, strip query params to find the base page in the cache
+          const url = new URL(event.request.url);
+          url.search = ''; // Strips all parameters (e.g., ?id=123)
+          
+          const cachedResponse = await caches.match(url);
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          
+          // 3. Fallback to an offline fallback page if even the base isn't cached
+          return caches.match('/offline.html');
+        }
+      })()
+    );
+  }
+});*/

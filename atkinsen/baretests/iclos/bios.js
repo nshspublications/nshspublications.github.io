@@ -160,6 +160,42 @@ BIOS.INT = BIOS.Interrupter.Router;
 BIOS.Print = BIOS.Teletype.Quick.Print;
 
 class BootStrap {
+    static CheckAutoOptions(){
+        this.FirstBoot = false;//may become redundant
+        console.log(BootStrap.FrameUIServer.forceautostart);//debug
+        // BootStrap.FrameUIServer.forceautostart = true;//debug
+        for(let i in SystemInputBuffer.AddressParameters.InputArray){
+            let value = SystemInputBuffer.AddressParameters.InputArray[i][1];
+            switch(SystemInputBuffer.AddressParameters.InputArray[i][0]){
+                case "BIOS_AUTOSTART":
+                    if(value === true || value === "true" || value === "TRUE" || value === "yes" || value === "YES"){
+                        BootStrap.FrameUIServer.forceautostart = true;
+                    }else{
+                        let n = Number.parseInt(value);
+                        if(!Number.isNaN(n)){
+                            BootStrap.FrameUIServer.forceautostart = true;
+                            BootStrap.FrameUIServer.selection = n%BootStrap.Registration.Store.length;
+                        }else{
+                            let chkd = false;
+                            for(let j in BootStrap.Registration.Store){
+                                if(BootStrap.Registration.Store[j].name === value){
+                                    if(chkd){
+                                        let msg = "WARNING: Boot option passed ("+value+") references MULTIPLE BOOT OPTIONS, BootStrap will select entry with greatest index (currently "+j+").\n";
+                                        console.warn(msg);
+                                        Console.write(msg);
+                                    }
+                                    chkd = true;
+                                    BootStrap.FrameUIServer.forceautostart = true;
+                                    BootStrap.FrameUIServer.selection = j;
+                                }
+                            }
+                        }
+                    }
+                    break;
+            }
+        }
+    }
+    static FirstBoot = true;
     static BootOption = 0; //bootstrap
     static Router = null; //null --> default to 0
     static Registration = class {
@@ -219,6 +255,7 @@ class BootStrap {
         static timeawait = null; //automatic selection
         static selection = BootStrap.Registration.DefaultBootSelection;
         static listbuffer = [0, "\t\n", null];
+        static forceautostart = false;
         static init(){
             //reinit
             this.timeawait = null; //automatic selection
@@ -311,6 +348,12 @@ class BootStrap {
                 }
             }
             Teletype.set_post(" [Press Enter to open] Selection: "+this.selection+" ["+BootStrap.Registration.Store[this.selection].name+"] \u2195 "+append);
+            if(BootStrap.FirstBoot){
+                BIOS.Print("First boot: checking auto options...\n");
+                this.forceautostart = autostart;
+                BootStrap.CheckAutoOptions();
+                autostart = this.forceautostart;
+            }
             if(autostart){
                 BIOS.Print("Booting from entry "+this.selection+"\n");
                 BootStrap.BootOption = this.selection;

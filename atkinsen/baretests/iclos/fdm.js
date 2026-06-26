@@ -35,6 +35,14 @@ class Internal {
 }
 
 class NetworkCallStack {
+    static ResponseMaybe = class {
+        static Success = "Success";
+        static Error = "Error";
+        constructor(type = this.Error, value = "Unspecified"){
+            this.type = type;
+            this.value = value;
+        }
+    }
     static CallTrace = {};
     static ObtainUnallocatedUniqueIdentifier(){
         let out = crypto.randomUUID();
@@ -94,27 +102,29 @@ class NetworkCallStack {
             for(let i=0;i<link.buffer.length;i++){
                 sum += link.buffer[i];
             }
+            let result = new NetworkCallStack.ResponseMaybe(NetworkCallStack.ResponseMaybe.Success, sum);
 
             //return sum;
-            link.callback(link.index, sum);
+            link.callback(link.index, result);
             if(link.autodeallocate){
                 NetworkCallStack.Deallocate(link.index);
             }
-            return sum;
+            return result;
         }
         static async fetch_get_text(index){
             let link = NetworkCallStack.CallTrace[index];
-            let result;
+            let result = new NetworkCallStack.ResponseMaybe(NetworkCallStack.ResponseMaybe.Error, "Weird"); //Errors: Unspecified, Weird, [Other]
 
             //
             try {
                 const response = await fetch(link.buffer);
                 const data = await response.text();
                 //console.log(data); //debug
-                result = data;
+                result.type = NetworkCallStack.ResponseMaybe.Success;
+                result.value = data;
             } catch (error) {
                 console.error(error);
-                result = error;
+                result.value = error;
             }
 
             link.callback(link.index, result);
@@ -125,17 +135,18 @@ class NetworkCallStack {
         }
         static async fetch_get_json(index){
             let link = NetworkCallStack.CallTrace[index];
-            let result;
+            let result = new NetworkCallStack.ResponseMaybe(NetworkCallStack.ResponseMaybe.Error, "Weird"); //Errors: Unspecified, Weird, [Other]
 
             //
             try {
                 const response = await fetch(link.buffer);
                 const data = await response.json();
                 //console.log(data); //debug
-                result = data;
+                result.type = NetworkCallStack.ResponseMaybe.Success;
+                result.value = data;
             } catch (error) {
                 console.error(error);
-                result = error;
+                result.value = error;
             }
 
             link.callback(link.index, result);
