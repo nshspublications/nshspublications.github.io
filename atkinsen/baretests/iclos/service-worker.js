@@ -37,6 +37,7 @@ const APP_STATIC_RESOURCES = [
   "./fdm.js",
   "./fhload.js",
   "./websafetyhandler.js",
+  "./gpdbbs.js",
 
 
   "./reference-legacy-employment_portal.html",
