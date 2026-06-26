@@ -35,6 +35,7 @@ const APP_STATIC_RESOURCES = [
   "./kframe.js",
   "./magekernel.js",
   "./fdm.js",
+  "./fhload.js",
 
 
   "./reference-legacy-employment_portal.html",

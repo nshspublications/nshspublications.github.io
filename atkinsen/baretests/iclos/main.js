@@ -111,4 +111,12 @@ Teletype.refresh();
 //   BIOS.Frame.LINK[BIOS.Frame.METHOD](BIOS.Frame.BUFFER);
 // });
 
+async function reach_FDM() {
+  const { FDM } = await import('./fdm.js');
+  return FDM;
+}
+
+//let FDM = reach_FDM();
+console.log(FDM.reach_test());
+
 BootStrap.FrameUIServer.init();

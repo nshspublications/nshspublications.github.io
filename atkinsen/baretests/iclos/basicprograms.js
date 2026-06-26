@@ -227,3 +227,56 @@ let sysjsprompt;
         )
     )
 }
+
+let gpdbbs_reader;
+{
+    gpdbbs_reader = class GPDBBS_Reader {
+        static ready = true;
+        static file = "Please wait...";
+        static processed_file = [];
+        static await_process_file = true;
+        static readlanding = "https://docs.google.com/spreadsheets/d/1nWyVU75Sje7pKYODCLU7zIF7hoqGRJ5_xjGbTrcfGrw/export?format=tsv&gid=0#gid=0";
+        //static readlanding = "https://docs.google.com/spreadsheets/d/1nWyVU75Sje7pKYODCLU7zIF7hoqGRJ5_xjGbTrcfGrw/export?format=tsv&gid=0#gid=0";
+        static frame(){
+            if(this.ready){
+                this.beginpoll();
+            }
+            if(this.await_process_file){
+                this.await_process_file = false;
+                this.process_file();
+            }
+            Teletype.set_post(this.processed_file.join("\n"));
+        }
+        static beginpoll(){
+            this.ready = false;
+            FDM.NetworkCallStack.DispatchJob([
+                "fetch_get_text",
+                this.readlanding,
+                (i, b) => {
+                    let proc=false;
+                    if(gpdbbs_reader.file !== b){proc=true;}
+                    gpdbbs_reader.file=b;
+                    gpdbbs_reader.ready=true;
+                    if(proc){
+                        gpdbbs_reader.await_process_file = true;
+                    }
+                },
+                true
+            ]);
+        }
+        static process_file(){
+            this.processed_file = this.file.split("\0");
+        }
+    }
+    BasicPrograms["GPDBBS_Reader"] = gpdbbs_reader;
+    BootStrap.Registration.Register(
+        new BootStrap.Registration.ExtShell(
+            "",
+            BasicPrograms.GPDBBS_Reader,
+            "frame",
+            ["frame",],
+            false,
+            "Simple GPDBBS Reader"
+        )
+    );
+}
