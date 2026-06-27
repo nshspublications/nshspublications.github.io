@@ -38,6 +38,9 @@ const APP_STATIC_RESOURCES = [
   "./fhload.js",
   "./websafetyhandler.js",
   "./gpdbbs.js",
+  "./forazzy.js",
+  "./stdbfutils.js",
+  "./biosprofileconfigurator.js",
 
 
   "./reference-legacy-employment_portal.html",
