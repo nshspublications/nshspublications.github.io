@@ -11,8 +11,14 @@ let __forazzy;
                     //
                 }
             }
+            static FillRule = class {
+                constructor(){ // Define how a frame should appear on the screen (fill previous, fill screen, float-fill previous, float-fill screen, static positioning, etc.)
+                    //
+                }
+            }
             constructor(){
                 this.render_routines = [];
+                this.fill_rule;
             }
         }
     }
@@ -26,7 +32,7 @@ let __forazzy;
         }
     }
     __forazzy = Foraz;
-    BasicPrograms["forazzy"] = forazzy;
+    BasicPrograms["forazzy"] = __forazzy;
     BootStrap.Registration.Register(
         new BootStrap.Registration.ExtShell(
             "forazzy",
