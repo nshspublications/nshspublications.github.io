@@ -120,3 +120,5 @@ async function reach_FDM() {
 console.log(FDM.reach_test());
 
 BootStrap.FrameUIServer.init();
+
+Vibration.passthrough(0);

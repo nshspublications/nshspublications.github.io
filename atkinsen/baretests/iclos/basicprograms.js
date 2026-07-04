@@ -63,35 +63,8 @@ let sysjsprompt;
                 return this.longmode();
             }
             let kb = BIOS.Keyboard.FlushKeybufferArray();
-            if(kb.includes("\n") || kb.includes("Enter")){
-                if(this.input === "`"){
-                    //enter long mode
-                    this.input = "";
-                    this.dolong = true;
-                    this.temp = "";
-                }else{
-                    this.last = this.input;
-                    try{
-                        this.cursor=0;
-                        Teletype.set_curoff(0);
-                        console.log(this.input);
-                        BIOS.Print("{%} "+this.input+"\n");
-                        if(this.enableprexec){
-                            let app = "";
-                            for(const k in this.prexecmodules){
-                                app += "var "+k+"="+this.prexecmodules[k]+";";
-                                console.log(this.prexecmodules[k]);
-                            }
-                            BIOS.Print(eval(app+this.input)+"\n");
-                        }else{
-                            BIOS.Print(eval(this.input)+"\n");
-                        }
-                        this.input = "";
-                    }catch(e){
-                        BIOS.Print("Error("+JSON.stringify(this.input)+"): "+e.msg+"\n");
-                    }
-                }
-            }else{
+            let ce = kb.includes("\n") || kb.includes("Enter");
+            {
                 for(let i=0;i<kb.length;i++){
                     switch(kb[i].length){
                         case 0:
@@ -146,6 +119,35 @@ let sysjsprompt;
                 //console.log(this.input);
                 Teletype.set_post("{%} "+this.input);
                 Teletype.set_curoff(this.cursor);
+            }
+            if(ce){
+                if(this.input === "`"){
+                    //enter long mode
+                    this.input = "";
+                    this.dolong = true;
+                    this.temp = "";
+                }else{
+                    this.last = this.input;
+                    try{
+                        this.cursor=0;
+                        Teletype.set_curoff(0);
+                        console.log(this.input);
+                        BIOS.Print("{%} "+this.input+"\n");
+                        if(this.enableprexec){
+                            let app = "";
+                            for(const k in this.prexecmodules){
+                                app += "var "+k+"="+this.prexecmodules[k]+";";
+                                console.log(this.prexecmodules[k]);
+                            }
+                            BIOS.Print(eval(app+this.input)+"\n");
+                        }else{
+                            BIOS.Print(eval(this.input)+"\n");
+                        }
+                        this.input = "";
+                    }catch(e){
+                        BIOS.Print("Error("+JSON.stringify(this.input)+"): "+e.msg+"\n");
+                    }
+                }
             }
         }
         static longmode(){

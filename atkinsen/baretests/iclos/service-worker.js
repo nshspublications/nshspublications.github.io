@@ -41,6 +41,7 @@ const APP_STATIC_RESOURCES = [
   "./forazzy.js",
   "./stdbfutils.js",
   "./biosprofileconfigurator.js",
+  "./vibration.js",
 
 
   "./reference-legacy-employment_portal.html",

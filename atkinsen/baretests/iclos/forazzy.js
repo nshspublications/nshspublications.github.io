@@ -16,6 +16,12 @@ let __forazzy;
                     //
                 }
             }
+            static RenderState = class {
+                //Volatile data for frame rendering (e.g., pos)
+                constructor(){
+                    //
+                }
+            }
             constructor(){
                 this.render_routines = [];
                 this.fill_rule;
@@ -24,7 +30,10 @@ let __forazzy;
     }
     class Foraz {
         static init(total = false){
-
+            if(total){
+                //one-time initialization, used at compile-time
+                //InputMultiplexer;
+            }
         }
         static frame(){
             BIOS.Print("Reached.\n");

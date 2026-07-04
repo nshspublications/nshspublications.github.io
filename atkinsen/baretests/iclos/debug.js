@@ -21,6 +21,7 @@ document.addEventListener('click', async () => {
     if(buffer === null){
       Keyboard.keybuffer.push("Backspace");
     }else{
+      console.log(Keyboard.keybuffer.concat((buffer+"\n").split("")));
       Keyboard.keybuffer = Keyboard.keybuffer.concat((buffer+"\n").split(""));
     }
   }
