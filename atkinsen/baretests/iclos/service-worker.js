@@ -106,7 +106,8 @@ self.addEventListener("activate", (event) => {
   );
 });*/
 
-/*self.addEventListener('fetch', (event) => {
+//fallback
+self.addEventListener('fetch', (event) => {
   console.log(event);
   event.respondWith(
     fetch(event.request)
@@ -119,44 +120,45 @@ self.addEventListener("activate", (event) => {
         return caches.match(event.request);
       })
   );
-});*/ //experimental code
+}); //experimental code
 
-self.addEventListener('fetch', (event) => {
-  //console.log("[sw] fetch event (.request):", event.request);//debug
+// //Was using this. 
+// self.addEventListener('fetch', (event) => {
+//   //console.log("[sw] fetch event (.request):", event.request);//debug
 
-  const url = new URL(event.request.url);
-  /*
-  // Ignore Service Worker cache if there are URLSearchParams
-  if (url.search.length > 0) {
-    console.log("[sw] nzevreq", event.request);
-    event.respondWith(fetch(event.request));
-    return;
-  }*/
+//   const url = new URL(event.request.url);
+//   /*
+//   // Ignore Service Worker cache if there are URLSearchParams
+//   if (url.search.length > 0) {
+//     console.log("[sw] nzevreq", event.request);
+//     event.respondWith(fetch(event.request));
+//     return;
+//   }*/
 
-  event.respondWith(
-    (async () => {
-        try {
-          // 1. Try to fetch from the network first
-          const networkResponse = await fetch(event.request);
-          // const cache = await caches.open(API_CACHE);
-          // await cache.put(event.request, networkResponse.clone());
-          return networkResponse;
-        } catch (error) {
-          // 2. If offline, strip query params to find the base page in the cache
-          const url = new URL(event.request.url);
-          url.search = ''; // Strips all parameters (e.g., ?id=123)
+//   event.respondWith(
+//     (async () => {
+//         try {
+//           // 1. Try to fetch from the network first
+//           const networkResponse = await fetch(event.request);
+//           // const cache = await caches.open(API_CACHE);
+//           // await cache.put(event.request, networkResponse.clone());
+//           return networkResponse;
+//         } catch (error) {
+//           // 2. If offline, strip query params to find the base page in the cache
+//           const url = new URL(event.request.url);
+//           url.search = ''; // Strips all parameters (e.g., ?id=123)
           
-          const cachedResponse = await caches.match(url);
-          if (cachedResponse) {
-            return cachedResponse;
-          }
+//           const cachedResponse = await caches.match(url);
+//           if (cachedResponse) {
+//             return cachedResponse;
+//           }
           
-          // 3. Fallback to an offline fallback page if even the base isn't cached
-          return caches.match(event.request); //HIGHLY EXPERIMENTAL CODE !!! !!!
-        }
-      })()
-  );
-});
+//           // 3. Fallback to an offline fallback page if even the base isn't cached
+//           return caches.match(event.request); //HIGHLY EXPERIMENTAL CODE !!! !!!
+//         }
+//       })()
+//   );
+// });
 
 async function findInCacheWithoutParams(cache, request) {
   const requests = await cache.keys();
