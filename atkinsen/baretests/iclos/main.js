@@ -1,4 +1,5 @@
-BIOS.Teletype.Quick.Print("iclOS CrashBoot\nCoreOS Research Group / Atkinsen Institute / A&C QDOS Project\n   H A C K E R S  N E T W O R K Associated.\n");
+//BIOS.Teletype.Quick.Print("iclOS CrashBoot\nCoreOS Research Group / Atkinsen Institute / A&C QDOS Project\n   H A C K E R S  N E T W O R K Associated.\n");
+BIOS.Teletype.Quick.Print("iclOS CrashBoot\nCoreOS Research Group / Atkinsen Institute / A&C QDOS Project\n   H7  N E T W O R K Associated.\n");
 
 if ("serviceWorker" in navigator) {
   BIOS.Print("[sw] Registering sw...\n");

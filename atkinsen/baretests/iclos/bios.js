@@ -347,9 +347,9 @@ class BootStrap {
                     autostart = true;
                 }
             }
-            Teletype.set_post(" [Press Enter to open] Selection: "+this.selection+" ["+BootStrap.Registration.Store[this.selection].name+"] \u2195 "+append);
+            Teletype.set_post("  [Press Enter to open] Selection: "+this.selection+" ["+BootStrap.Registration.Store[this.selection].name+"] \u2195 "+append);
             if(BootStrap.FirstBoot){
-                BIOS.Print("First boot: checking auto options...\n");
+                BIOS.Print("\nFirst boot: checking auto options...\n");
                 this.forceautostart = autostart;
                 BootStrap.CheckAutoOptions();
                 autostart = this.forceautostart;
