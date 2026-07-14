@@ -1,0 +1,1251 @@
+<html>
+<head>
+    <style>body {
+        background-color: black;
+        
+        }</style>
+</head>
+<body>
+<pre><p style="font-family: Courier, monospace; color: rgb(255 255 255);" id="tty">No change to tty out.</p></pre><form onsubmit="mobile_finpt_submit();" id="finptform"><input type="password" autocomplete="off" autocapitalize="off" size="0" style="outline: none; background: transparent; border: none; visibility: hidden;" id="finpt"></input></form> <!-- outline: none; background: transparent; border: none;  -->
+
+<script>
+
+var scr = true; //scroll=false;
+document.getElementById('tty').textContent = "";
+var tty = "";
+var tty_pre = "\n";
+var tty_post = "_";
+
+var keybuffer = [];
+var keybs = "";
+var wasbs = 0;
+var xlrch = 0;
+var yduch = 0;
+
+var override_histcommit = false;
+
+var mobilekeybuffer = [];
+//var mkbcancel = 0;
+var backspacewaits = 0;
+var enterwaits = 0;
+var mobileprovisions = false;
+
+var skb = -1;
+
+var tr = 30; //tickrate
+
+var gCacheString = "";
+
+var notif = true;
+var belli = -1;
+var curgresi = -1;
+var keyw = 5;
+var autoexec = "";
+
+var keybshistory = [""];
+var histi = 0;
+
+var backcol = [0,0,0];
+var textcol = [255,255,255];
+
+var setdef = [
+    ["Notifications",
+        ["Show bell icon next to new messages","notif",0],
+        ["Send push notifications to device while chat is minimized","\"Unsupported.\"",1]
+    ],
+    ["User",
+        ["Display name","",2]
+    ],
+    ["Misc",
+        ["Cursor character","curchar",3],
+        ["Screensaver text","hidetxt",4], 
+        ["Screensaver exit string","hidechar",5]
+    ],
+    ["Close",
+        ["Save changes","\"\"",-1],
+        ["Save changes & Exit","\"\"",-2],
+        ["Exit","\"\"",-3]
+    ]
+];
+var setdef_replace = [[false,"off"],[true,"on"]];
+var ssel = [-1,-1];
+
+function changesetting(si){
+
+}
+
+function settings_xych(k){
+    for(var i=0;i<k.length;i++){
+        switch(k.charAt(i)){
+            case ",":
+                xlrch--;
+            break;
+            case ".":
+                xlrch++;
+            break;
+            case "<":
+                xlrch--;
+            break;
+            case ">":
+                xlrch++;
+            break;
+            case "\n":
+                mode = "setsetting";
+            break;
+        }
+    }
+    ssel[0] +=xlrch;
+    ssel[1] -=yduch;
+    xlrch=0;
+    yduch=0;
+    ssel[0] = Math.max(0,Math.min(setdef.length-1,ssel[0]));
+    ssel[1] = Math.max(0,Math.min(setdef[ssel[0]].length-2,ssel[1]));
+}
+
+function printsettingspage(){
+    var out = "";
+    var i;
+    var txta = [];
+    var txtb = [];
+    var txtdel = [];
+    var maxlena = 0;
+    for(i=0;i<setdef.length;i++){
+        if(ssel[0] === i){
+            out += "["+setdef[i][0]+"]";
+        }else{
+            out += " "+setdef[i][0]+" ";
+        }
+        out += " ";
+    }
+    out += "\n\n";
+    for(i=1;i<setdef[ssel[0]].length;i++){
+        //out += setdef[ssel[0]][i][0]+" ";
+        txta.push(setdef[ssel[0]][i][0]);
+        txtb.push(rsetdef(eval(setdef[ssel[0]][i][1])));
+        maxlena = Math.max(maxlena,setdef[ssel[0]][i][0].length);
+        if(i-1===ssel[1]){
+            //out+=curchar;
+            txtdel.push("  []  ");
+        }else{
+            //out +=" ";
+            txtdel.push("      ");
+        }
+        //out += " "+eval(setdef[ssel[0]][i][1])+"\n";
+    }
+    //out += wsc("\nmaxlena:"+maxlena+"\n",2);
+    for(i=0;i<txta.length;i++){
+        out += txta[i]+wsc(" ",maxlena-txta[i].length)+txtdel[i]+txtb[i]+"\n";
+    }
+    return out;
+}
+
+function wsc(s,n){
+    var out = "";
+    for(var i=0;i<n;i++){
+        out += s;
+    }
+    return out;
+}
+
+function rsetdef(v){
+    for(var i=0;i<setdef_replace.length;i++){
+        if(setdef_replace[i][0] === v){
+            return setdef_replace[i][1];
+        }
+    }
+    return v;
+}
+
+var isMobile = navigator.userAgent.toLowerCase().includes('mobile');
+if(typeof navigator.userAgentData === 'object'){
+    isMobile = navigator.userAgentData.mobile;
+}
+
+if(isMobile){
+    mobileprovisions = true;
+    document.getElementById("finpt").value = "*";
+    cout("Note: Scrolling behavior is different on mobile than is standard.\n");
+    scr=false;
+}
+
+function dbgfm(){
+    //debug_force_mobile
+    isMobile = true;
+    mobileprovisions = true;
+    document.getElementById("finpt").value = "*";
+    cout("Note: Scrolling behavior is different on mobile than is standard.\n");
+    scr=false;
+}
+
+ttyff = document.getElementById('tty');
+ttyff.addEventListener("click", function(){
+        var ielem;
+        if(isMobile){
+        ielem = document.getElementById("finpt");
+        ielem.style.visibility = 'visible';
+        ielem.focus();
+        }else if(mobileprovisions){
+        ielem = document.getElementById("finpt");
+        //ielem.style.visibility = 'visible';
+        ielem.focus();
+        //ielem.style.visibility = 'hidden';
+        }
+        //ielem.style.visibility = 'hidden';
+    });
+
+function cout(s){
+    tty_pre+=s;
+    //document.getElementById('tty').textContent = tty_pre+tty+tty_post;
+    update_tty();
+}
+
+function update_tty(){
+    document.getElementById('tty').textContent = tty+tty_post+tty_pre;
+    if(scr && !mobileprovisions){document.getElementById('tty').scrollIntoView({ behavior: 'instant', block: 'end' });}
+}
+
+function tsvstr_to_2darr(s){
+    var out = [];
+    var p = s.split("\r\n");
+    for(var i=0;i<p.length;i++){
+        out.push(p[i].split("\t"));
+    }
+    return out;
+}
+
+//fetch("https://docs.google.com/forms/d/e/1FAIpQLSfLDaYTC59eQYYrqwFUe3DzGO67NbR9J-JLyRWjlqSmsCcZDA/formResponse?usp=pp_url&entry.736993216=EMAIL+ADDR3&entry.2089575475=MSG+FIELD%21                &entry.972830120=(Do+not+select+if+you+do+not+know+what+this+does)+Post+As+Raw+Command",{method:'GET',mode:'no-cors'})
+//fetch("https://docs.google.com/forms/d/e/1FAIpQLSfLDaYTC59eQYYrqwFUe3DzGO67NbR9J-JLyRWjlqSmsCcZDA/formResponse?usp=pp_url&entry.736993216=mailer     &entry.2089575475=Message+Test+From+AUTOMAN%21&entry.972830120=x",{method:'GET',mode:'no-cors'})
+
+var gres = -1;
+var gchange = false;
+var gres_c = gres;
+var last_detch = "";
+var last_fetch = "";
+var udb_status = "";
+
+var rmchange = false;
+
+var mode = "login";
+
+var username = "guest";
+var room = "";
+
+var feedcache = "No feed cache.\n";
+var addlineprefix = false;
+var showposttimestamp = false;
+
+//var scr = true; //scroll=false;
+var hide = false;
+var hidetxt = "$ ";
+var hidechar = "\n";
+
+var curchar = "_";
+
+var cacheversion = 1;
+var needstocache = false;
+
+var packages = []; //[ [name,contents] ...]
+
+async function updateDB_old(){
+    //cout("Attempting fetch... \n");
+    udb_status = "Attempting fetch...\n";
+    try{
+        const response = await fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vRY_GjB--qooB76G3R6aOrK2W6QjANBc9zqlIpvUbeM9na7Sj03yuHkyu0I-tbhvKWvNrDtPyKzknRK/pub?gid=0&single=true&output=tsv");
+        //const response = await fetch("https://www.google.com");
+        udb_status = "Checking response...\n";
+        if(!response.ok){
+            cout("Error: "+response.status+"\n");
+            //throw new Error(`Response status: ${response.status}`);
+        }
+        udb_status = "Retrieving response content...\n";
+        //const json = await response.json();
+        const pgres = await response.bytes();
+        //alert(response);
+        gres = uint8arr_to_str(pgres);
+        //console.log(pgres);
+        //console.log(gres);
+        //gjson = json;
+        //document.getElementById('tty').textContent = json;
+        
+        gchange = true;
+        //cout(JSON.stringify(gres)+"\n");
+        //cout("updateDB Done.\n");
+        last_fetch = (new Date).toString();
+        udb_status = "Fetched.\n";
+    }catch(error){
+        console.error(error.message);
+        cout("Error: "+error.message+"\n");
+    }
+}
+async function updateDB(){
+    //https://docs.google.com/spreadsheets/d/e/2PACX-1vRY_GjB--qooB76G3R6aOrK2W6QjANBc9zqlIpvUbeM9na7Sj03yuHkyu0I-tbhvKWvNrDtPyKzknRK/pubhtml?gid=0&amp;single=true&amp;widget=true&amp;headers=false
+    /*try{
+        const response = await fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vRY_GjB--qooB76G3R6aOrK2W6QjANBc9zqlIpvUbeM9na7Sj03yuHkyu0I-tbhvKWvNrDtPyKzknRK/pubhtml?gid=0&amp;single=true&amp;widget=true&amp;headers=false",{method:'GET',mode:'no-cors'});
+        if(!response.ok){
+            cout("PROTO ERROR: "+response.status+"\n");
+        }
+        const json = await response.text();
+        cout("JSON RESPONSE: "+json+"\n");
+    }catch(error){
+        cout("PROTO ERROR: "+error.message+"\n");
+    }*/
+    udb_status = "Attempting fetch...\n";
+    try {
+        
+    //read .csv file on a server
+    const target = `https://docs.google.com/spreadsheets/d/1nWyVU75Sje7pKYODCLU7zIF7hoqGRJ5_xjGbTrcfGrw/export?format=tsv&gid=0#gid=0`;
+
+    const res = await fetch(target, {
+        method: 'get',
+        headers: {
+            'content-type': 'text/tsv;charset=UTF-16',
+        }
+    });
+    udb_status = "Checking response...\n";
+    if (res.status === 200) {
+        udb_status = "Retrieving response content...\n";
+        const data = await res.text();
+        gres = data;
+        gchange = true;
+        last_fetch = (new Date).toString();
+        udb_status = "Fetched.\n";
+        //console.log(data);
+        //cout(data+"\n");
+    } else {
+            console.log(`Error code ${res.status}`);
+            cout("Error: "+res.status+"\n");
+            udb_status = "Error, retrying...\n";
+            gchange=true;
+        }
+    } catch (err) {
+        console.log(err);
+        udb_status = "Error, retrying...\n";
+        gchange = true;
+    }
+}
+async function submitForm(data){
+    //https://docs.google.com/forms/d/e/1FAIpQLSfLDaYTC59eQYYrqwFUe3DzGO67NbR9J-JLyRWjlqSmsCcZDA/viewform?usp=pp_url&entry.736993216=EMAIL+ADDR&entry.2089575475=MSG+FIELD&entry.972830120=(Do+not+select+if+you+do+not+know+what+this+does)+Post+As+Raw+Command
+    //fetch("https://docs.google.com/forms/d/e/1FAIpQLSfLDaYTC59eQYYrqwFUe3DzGO67NbR9J-JLyRWjlqSmsCcZDA/formResponse?usp=pp_url&entry.736993216=EMAIL+ADDR3&entry.2089575475=MSG+FIELD&entry.972830120=(Do+not+select+if+you+do+not+know+what+this+does)+Post+As+Raw+Command",{method:'GET',mode:'no-cors'})
+    //https://docs.google.com/forms/d/e/1FAIpQLSfLDaYTC59eQYYrqwFUe3DzGO67NbR9J-JLyRWjlqSmsCcZDA/formResponse?entry.736993216=mailer&entry.2089575475=Message+Test+From+AUTOMAN%21&entry.972830120=x
+    const formId = '1FAIpQLSfLDaYTC59eQYYrqwFUe3DzGO67NbR9J-JLyRWjlqSmsCcZDA';
+    const baseUrl = 'https://docs.google.com/forms/d/e/'+formId+'/formResponse';
+    const formData = new URLSearchParams();
+    for(const key in data){
+        formData.append(key, data[key]);
+    }
+    const url = baseUrl + '?usp=pp_url&' + formData.toString();
+    //cout(url+"\n");
+    //alert(url);
+    try{
+        const response = await fetch(url, {
+            method: 'GET',
+            mode: 'no-cors' //might be impossible
+        });
+        if(response.status === 200){
+            console.log("Successful Submit");
+            //cout("Successful Submit\n");
+        }else{
+            console.error("Submit Error",response.status);
+            //cout("Unsuccessful Submit: "+response.status+"\n");
+        }
+    }catch(error){
+        console.error("Submit Error",response.status);
+    }
+}
+function postCommand(un,cmd,israw){
+    var rv = '(Do not select if you do not know what this does) Post As Raw Command';
+    if(israw){
+        const fd = {'entry.736993216':un,'entry.2089575475': cmd,'entry.972830120':rv};
+        submitForm(fd);
+    }else{
+        //rv = "";
+        const fd = {'entry.736993216':un,'entry.2089575475': cmd};
+        submitForm(fd);
+    }
+    
+}
+
+function uint8arr_to_str(ua){
+    var out = "";
+    for(var i=0;i<ua.length;i++){
+        out += String.fromCharCode(ua[i]);
+    }
+    return out;
+}
+//cout("Origin: "+window.location.origin+"\n");
+//const fd = {'entry.736993216':'mailer','entry.2089575475': 'Message Test From AUTOMAN!','entry.972830120':'(Do not select if you do not know what this does) Post As Raw Command'};
+//submitForm(fd);
+//postCommand('uname','testcmd',false);
+
+updateDB();
+//cout("  RESPONSE: \n"+gres+"\n");
+
+setInterval(function(){
+    tscu();
+    //document.getElementById('tty').scrollIntoView({ behavior: 'instant', block: 'end' });
+    if(gchange){
+        if(gres !== gres_c){
+            gres_c = gres;
+            last_detch = (new Date).toString();
+            feedcache = getfeed(room);
+            //cout("Update: "+last_detch+"\n");
+        }
+        //cout("Refresh.\n");
+        
+        gchange=false;
+        updateDB();
+    }
+    if(rmchange){
+        feedcache = getfeed(room);
+        rmchange = false; //uhh...why wasn't this here? 
+    }
+    main();
+    update_tty();
+},1000/tr);
+
+function tscu(){
+    if(skb!==keybuffer.length){
+        //statechange=true;
+        skb=keybuffer.length;
+    }
+}
+
+function getfeed(rm){
+    //cout("getfeed()\n");//debug
+    var out = "";
+    var dtp = tsvstr_to_2darr(gres)[0][0].split("\u0000");
+    //console.log(dtp);
+
+    var al = []; //[un,name]
+    var posts = []; //[un,str,i]
+    var del = []; //[un,post(i)]
+    var i,j;
+    for(i=0;i<dtp.length;i++){
+        //un:post #room str
+        //un:name str
+        var cmd = breakcmd(dtp[i]);
+        if(cmd.length < 2){
+            continue;
+        }else if(cmd[1] === "post"){
+            if(cmd.length<4){continue;}
+            if(JSON.parse(cmd[2]) === rm){
+                posts.push([cmd[0],JSON.parse(cmd[3]),i]); //we have i here for delete functionality
+                if(cmd.length >= 5){
+                    
+                    posts[posts.length-1].push(JSON.parse(cmd[4]));
+                }
+            }
+        }else if(cmd[1] === "name"){
+            if(cmd.length!==3){continue;}
+            //DOES expect string formatting
+            var stopgm = true;
+            for(j=0;j<al.length;j++){
+                if(al[j][0]===cmd[0]){
+                    al[j][1]=JSON.parse(cmd[2]);
+                    stopgm=false;
+                    break;
+                }   
+            }
+            if(stopgm){
+                al.push([cmd[0],JSON.parse(cmd[2])]);
+            }
+            //console.log(al);
+        }else if(cmd[1] === "delete"){
+            if(cmd.length!==3){continue;}
+            //this is a delete REQUEST. cmd[0] of post needs to match cmd[0] of delete
+            del.push([cmd[0],JSON.parse(cmd[2])]);
+        }
+    }
+    //curgresi = dtp.length-1;
+    //if(curgresi === undefined){
+        //console.log(posts[posts.length-1]);
+    //}
+    if(posts.length !== 0){curgresi = posts[posts.length-1][2];} //I guess this is where the error is???
+    x: for(i=0;i<posts.length;i++){ //addlineprefix?
+        for(j=0;j<del.length;j++){
+            if(del[j][0] === posts[i][0] && del[j][1] === posts[i][2]){
+                continue x;
+            }
+        }
+        if(addlineprefix){
+            out += "(" + posts[i][2] + ") ";
+        }
+        if(showposttimestamp && posts[i].length >= 4){
+            out += "["+posts[i][3]+"] ";
+        }
+        if(notif && posts[i][2] > belli){
+            out+= "\u237E ";
+        }
+        out += aliasmatch(posts[i][0],al) + ": " + posts[i][1] + "\n";
+    }
+
+    return out;
+}
+
+function breakcmd(s){
+    var out = [];
+    var i;
+    var t = "";
+    for(i=0;s.charAt(i)!==":"&&i<s.length;i++){
+        t+=s.charAt(i);
+    }
+    i++;
+    out.push(t);
+    t="";
+    var esc = false;
+    var qch = "";
+    var inq = false;
+    var hws = true;
+    for(;i<s.length;i++){
+        var chr = s.charAt(i);
+        if(esc){
+            esc=false;
+            t+=chr;
+        }else if(chr === "\\"){
+            t+="\\";
+            esc=true;
+            hws=false;
+        }else if(inq){
+            if(chr === qch){
+                inq = false;
+            }
+            t += chr;
+        }else if(chr === "\"" || chr === "'"){
+            qch = chr;
+            inq = true;
+            t += chr;
+            hws=false;
+        }else if(chr === " "){
+            if(!hws){
+                out.push(t);
+                t="";
+                hws=true;
+            }
+        }else{
+            if(hws){
+                hws=false;
+            }
+            t+=chr;
+        }
+    }
+    if(t.length!==0){
+        out.push(t);
+    }
+    return out;
+}
+
+function breakcmd_notag(s){
+    var out = [];
+    var i;
+    var t = "";
+
+    var esc = false;
+    var qch = "";
+    var inq = false;
+    var hws = true;
+    for(i=0;i<s.length;i++){
+        var chr = s.charAt(i);
+        if(esc){
+            esc=false;
+            t+=chr;
+        }else if(chr === "\\"){
+            t+="\\";
+            esc=true;
+            hws=false;
+        }else if(inq){
+            if(chr === qch){
+                inq = false;
+            }
+            t += chr;
+        }else if(chr === "\"" || chr === "'"){
+            qch = chr;
+            inq = true;
+            t += chr;
+            hws=false;
+        }else if(chr === " "){
+            if(!hws){
+                out.push(t);
+                t="";
+                hws=true;
+            }
+        }else{
+            if(hws){
+                hws=false;
+            }
+            t+=chr;
+        }
+    }
+    if(t.length!==0){
+        out.push(t);
+    }
+    return out;
+}
+
+function aliasmatch(un,al){
+    for(var i=0;i<al.length;i++){
+        if(un === al[i][0]){
+            return al[i][1];
+        }
+    }
+    return un;
+}
+
+function processcmd(s){
+    var cmd = breakcmd_notag(s);
+    var b;
+    var i,j,k;
+    var dtp;
+    var oa,os,c;
+    if(cmd.length === 0){
+        return;
+    }
+    switch(cmd[0]){
+        case "":
+            return; 
+        break;//
+        case "cls":
+            tty_pre = "";
+        break;
+        case "clr":
+            tty_pre = "";
+        break;
+        case "clear":
+            tty_pre = "";
+        break;
+        case "mgr":
+            if(cmd.length === 1){
+                cout("[mgr] No input specified.\n");
+                return;
+            }
+            switch(cmd[1]){
+                case "list":
+                    if(cmd.length === 2){
+                        cout("[mgr] List options: raw room user name\n");
+                        return;
+                    }
+                    dtp = tsvstr_to_2darr(gres)[0][0].split("\u0000");
+                    var grep = ["",0]; //[cmd1check (-1 means any),cmdret (-1 means line)]
+                    switch(cmd[2]){
+                        case "room":
+                            grep = ["post",2];
+                        break;
+                        case "user":
+                            grep = [-1,0];
+                        break;
+                        case "name":
+                            grep = ["name",-1];
+                        break;
+                        case "raw":
+                            cout(dtp.join("\n")+"\n");
+                            return;
+                        default:
+                            cout("[mgr] "+cmd[2]+" not recognized as list.\n");
+                            return;
+                    }
+                    oa = [];
+                    for(i=0;i<dtp.length;i++){
+                        b = breakcmd(dtp[i]);
+                        if(b.length < 2){
+                            continue; //just doesn't count.
+                        }
+                        if(grep[0] === -1 || b[1] === grep[0]){
+                            k = true;
+                            for(j=0;j<oa.length;j++){
+                                if(grep[1] === -1){
+                                    //k=false;
+                                    break;
+                                }else if(oa[j] === b[grep[1]]){
+                                    k=false;
+                                    break;
+                                }
+                            }
+                            if(k){
+                                if(grep[1] === -1){
+                                    oa.push(dtp[i]);
+                                }else{
+                                    oa.push(b[grep[1]]);
+                                }
+                            }
+                        }
+                    }
+                    cout(oa.join("\n")+"\n");
+
+                    return;
+                break;
+            }
+        break;
+        case "help":
+            if(cmd.length === 1){return;}
+            switch(cmd[1]){
+                case "more":
+                    cout("help [command]: get specific help message for command\nhelp more: display long help message\ncls / clr / clear: clear console output\nhidetext: display string used by hide (called hidetxt)\nhidetext [string]: set hidetxt string (JSON-formatted string)\nmgr: management tool\nhidestring: display string (called hidechar, defaults to newline delimiter) that hide waits for to be typed in order to close\nhidestring [string]: set hidechar string (JSON-formatted string)\n");
+                    return;
+                break;
+            }
+        break;
+        case "hidetext":
+            if(cmd.length === 1){
+                cout("Current hide text:\n"+hidetxt+"\n");
+            }else{
+                hidetxt = JSON.parse(cmd[1]);
+            }
+        break;
+        case "hidestring":
+            if(cmd.length === 1){
+                cout("Current hide string: "+JSON.stringify(hidechar)+"\n");
+            }else{
+                hidechar = JSON.parse(cmd[1]);
+            }
+        break;
+        case "cache":
+            //save client settings for user
+            cache_cli_settings_w_srv();
+        break;
+        case "decache":
+            //unsave client settings for user
+            decache_cli_settings_w_srv();
+        break;
+        case "tickrate":
+            if(cmd.length!==2){
+                cout("Insufficient arguments.\n");
+                return;
+            }
+            tr = JSON.parse(cmd[1]);
+        break;
+        case "apply-cache":
+            cacheinit();
+            applyCacheStore();
+        break;
+        case "eval":
+            for(i=1;i<cmd.length;i++){
+                try{eval(JSON.parse(cmd[i]));}catch(error){cout("From eval: "+error.message+"\n");}
+            }
+        break;
+        case "evalecho":
+            for(i=1;i<cmd.length;i++){
+                try{cout(""+eval(JSON.parse(cmd[i]))+"\n");}catch(error){cout("From evalecho: "+error.message+"\n");}
+            }
+        break;
+        default:
+            cout("'"+cmd[0]+"' is not recognized as a valid command.\n");
+    }
+}
+
+function cache_cli_settings_w_srv(){
+    var cs = "";
+    var c = {};
+    c.hidechar = hidechar;
+    c.hidetxt = hidetxt;
+    c.tr = tr;
+    c.room = room;
+    c.scr = scr;
+    c.notif = notif;
+    c.belli = belli;
+    c.keyw = keyw;
+    c.autoexec = autoexec;
+    c.showposttimestamp = showposttimestamp;
+    c.cacheversion = cacheversion;
+    cs = JSON.stringify(c);
+    postCommand(username,"cache "+JSON.stringify(cs),true);
+    needstocache = false;
+}
+
+function decache_cli_settings_w_srv(){
+    postCommand(username,"decache",true);
+}
+
+function applyCacheStore(){
+    if(gCacheString.length === 0){
+        return;
+    }
+    var c = JSON.parse(gCacheString);
+    hidechar = c.hidechar;
+    hidetxt = c.hidetxt;
+    tr = c.tr;
+    room = c.room;
+    scr = c.scr;
+    notif = c.notif;
+    //cout("[cache] belli changed from "+belli+" to "+c.belli+".\n");//debug
+    belli = c.belli;
+    keyw = c.keyw;
+    autoexec = c.autoexec;
+    switch(c.cacheversion){
+        case cacheversion:
+            showposttimestamp = c.showposttimestamp;
+        break;
+        default:
+            needstocache = true;
+    }
+    rmchange=true;
+    cout("Cached settings applied.\n");
+    eval(autoexec);
+}
+
+function cacheinit(){
+    //workinonit
+    var out = "";
+    var dtp = tsvstr_to_2darr(gres)[0][0].split("\u0000");
+    //console.log(dtp);
+
+    //var al = []; //[un,name]
+    //var posts = []; //[un,str,i]
+    //var del = []; //[un,post(i)]
+    var i,j;
+    for(i=0;i<dtp.length;i++){
+        //un:post #room str
+        //un:name str
+        var cmd = breakcmd(dtp[i]);
+        if(cmd.length < 2){
+            continue;
+        }else if(cmd[0] === username && cmd[1] === "cache"){
+            if(cmd.length!==3){continue;}
+            gCacheString = JSON.parse(cmd[2]);
+        }else if(cmd[0] === username && cmd[1] === "decache"){
+            gCacheString = "";
+        }
+    }
+}
+
+function main(){
+    updatekeybs();
+
+    var promptinfo = "";
+    switch(mode){
+        case "":
+            if(needstocache){
+                cache_cli_settings_w_srv();
+                cout("Client settings cache updated to version "+cacheversion+"\n");
+            }
+            promptinfo = "(savr post room name logout help delete chs) ";
+            if(keybs.includes("\n")){
+                switch(keybs.split("\n")[0]){
+                    case "settings":
+                        commitkeybshist(keybs.split("\n")[0]);
+                        keybs = "";
+                        //hide = true;
+                        mode = "chsettings";
+                        ssel = [0,0];
+                        xlrch = 0;
+                        yduch = 0;
+                        override_histcommit = true;
+                    break;
+                    case "savr":
+                        commitkeybshist(keybs.split("\n")[0]);
+                        keybs = "";
+                        hide = true;
+                        mode = "hide";
+                    break;
+                    case "hide":
+                        commitkeybshist(keybs.split("\n")[0]);
+                        keybs = "";
+                        hide = true;
+                        mode = "hide";
+                    break;
+                    case "h":
+                        commitkeybshist(keybs.split("\n")[0]);
+                        keybs = "";
+                        hide = true;
+                        mode = "hide";
+                    break;
+                    case "post":
+                        commitkeybshist(keybs.split("\n")[0]);
+                        keybs = "";
+                        mode = "sendpost";
+                    break;
+                    case "p":
+                        commitkeybshist(keybs.split("\n")[0]);
+                        keybs = "";
+                        mode = "sendpost";
+                    break;
+                    case "":
+
+                    break;
+                    case "room":
+                        commitkeybshist(keybs.split("\n")[0]);
+                        keybs = "";
+                        mode = "chroom";
+                    break;
+                    case "name":
+                        commitkeybshist(keybs.split("\n")[0]);
+                        keybs = "";
+                        mode = "chname";
+                    break;
+                    case "logout":
+                        cache_cli_settings_w_srv();
+                        commitkeybshist(keybs.split("\n")[0]);
+                        keybs = "";
+                        mode = "login";
+                    break;
+                    case "help":
+                        commitkeybshist(keybs.split("\n")[0]);
+                        keybs = "";
+                        mode = "helperpage";
+                    break;
+                    case "r":
+                        commitkeybshist(keybs.split("\n")[0]);
+                        keybs = "";
+                        mode = "raw";
+                    break;
+                    case "delete":
+                        commitkeybshist(keybs.split("\n")[0]);
+                        keybs = "";
+                        mode = "delist";
+                    break;
+                    case "chs":
+                        commitkeybshist(keybs.split("\n")[0]);
+                        keybs = "";
+                        scr = !scr;
+                        cout("Scroll is ");
+                        if(scr){
+                            cout("on.\n");
+                        }else{
+                            cout("off.\n");
+                        }
+                    break;
+                    case "when":
+                        showposttimestamp = !showposttimestamp;
+                        commitkeybshist(keybs.split("\n")[0]);
+                        keybs = "";
+                        rmchange = true;
+                    break;
+                    default:
+                        processcmd(keybs.split("\n")[0]);
+                        commitkeybshist(keybs.split("\n")[0]);
+                        keybs = "";
+                }
+            }
+        break;
+        case "login":
+            promptinfo = "Username: ";
+            if(keybs.includes("\n")){
+                username = keybs.split("\n")[0];
+                cout("Logged as user: "+keybs.split("\n")[0]+"\n");
+                keybs = "";
+                mode = "";
+                if(gres === -1){
+                    cout("Login completed before database loaded, use apply-cache to rectify settings that did not load from server.\n");
+                }
+                cacheinit();
+                applyCacheStore();
+            }
+        break;
+        case "sendpost":
+            promptinfo = "";
+            if(keybs.includes("\n")){
+                if(keybs.split("\n")[0].length!==0){postCommand(username,"post "+JSON.stringify(room)+" "+JSON.stringify(keybs.split("\n")[0])+" "+JSON.stringify((new Date).toString()),true);}
+                keybs = "";
+                mode = "";
+            }
+        break;
+        case "chroom":
+            promptinfo = "Room Name: ";
+            if(keybs.includes("\n")){
+                room = keybs.split("\n")[0];
+                rmchange=true;
+                commitkeybshist(keybs.split("\n")[0]);
+                keybs = "";
+                mode = "";
+            }
+        break;
+        case "chname":
+            promptinfo = "New Name: ";
+            if(keybs.includes("\n")){
+                postCommand(username,"name "+JSON.stringify(keybs.split("\n")[0]),true);
+                keybs = "";
+                mode = "";
+            }
+        break;
+        case "helperpage":
+            promptinfo = "savr : Hide information, press enter (or custom hidechar -- see help more) to unhide once hidden. You can also type hide or h instead of savr.\npost : Post a message in current Room -- you can also type p instead of post to do so more quickly.\nroom : Change room.\nname : Change the display name associated with your username.\nlogout : Return to login page.\nhelp : Display this message.\nr : Send a raw server command. (Know what you are doing!)\ndelete : Delist a message you've sent.\nchs : Swap page autoscrolling on/off.\nhelp more : Help page containing non-interfacial/non-core command information.\ncls/clr/clear : Clear screen info log (below command line).\n\nPress Enter to return to the main prompt.\n";
+            if(keybs.includes("\n")){ 
+                keybs = "";
+                mode = "";
+            }
+        break;
+        case "raw":
+            promptinfo = "[raw srv cmd] ";
+            if(keybs.includes("\n")){
+                if(keybs.split("\n")[0].length!==0){postCommand(username,keybs.split("\n")[0],true);}
+                commitkeybshist(keybs.split("\n")[0]);
+                keybs = "";
+                mode = "";
+            }
+        break;
+        case "delist":
+            promptinfo = "";
+            addlineprefix = true;
+            rmchange = true;
+            if(keybs.includes("\n")){
+                if(keybs.split("\n")[0].length!==0){postCommand(username,"delete "+keybs.split("\n")[0],true);}
+                commitkeybshist(keybs.split("\n")[0]);
+                keybs = "";
+                mode = "";
+                addlineprefix = false;
+            }
+        break;
+        case "hide":
+            promptinfo = hidetxt;
+            tty_pre = "";
+            //hide = true;
+            if(keybs.includes(hidechar)){
+                keybs = "";
+                hide = false;
+                mode = "";
+            }
+        break;
+        case "chsettings":
+            //mode = "";//debug
+            /*ssel[0] += xlrch;
+            xlrch = 0;
+            ssel[1] -= yduch;
+            yduch = 0;*/
+            settings_xych(keybs);
+            keybs = "";
+            tty = printsettingspage();
+        break;
+        
+        default:
+
+    }
+
+    //var pretty = "Origin: "+window.location.origin+"\nLast Feed Change: "+last_detch+"\nLast Fetch: "+last_fetch+"\nUpdate Status: "+udb_status+"\nCurrent Feed Data:\n"+JSON.stringify(gres)+"\n\nTickrate: "+tr+"\n";
+    var pretty = "Origin: "+window.location.origin+"\nLast Feed Change: "+last_detch+"\nLast Fetch: "+last_fetch+"\nUpdate Status: "+udb_status+"\nTickrate: "+tr+"\n";
+
+    if(hide){
+        tty = "";
+        tty_post = promptinfo + keybs + curchar + "\n";
+    }else if(mode === "chsettings"){
+        tty_post = "";
+    }else{
+        tty = pretty + gres + "\n" + feedcache + "\n";
+        tty_post = promptinfo + keybs + curchar + "\n";
+    }
+    
+    
+}
+
+function updatekeybs(){
+    var a = flushkeybuffer();
+    keybs += a;
+}
+
+function flushkeybuffer(){
+    var out = "";
+    if(mobilekeybuffer.length!==0){
+        keybuffer = keybuffer.concat(mobilekeybuffer);
+        mobilekeybuffer = [];
+    }
+    for(var i=0;i<keybuffer.length;i++){
+        if(keybuffer[i] === "Enter" && notif && belli !== curgresi){ //wow.
+            //cout("belli changed from "+belli+" to "+curgresi+".\n");//debug
+            belli = curgresi;
+            rmchange=true;//feedcache = getfeed(room);
+        }
+        out+=dispchar(keybuffer[i]);
+    }
+    keybuffer = [];
+    skb=0;
+    return out;
+}
+
+function backspace(){
+    keybs = keybs.slice(0,keybs.length-1);
+}
+
+function histscroll(ch){
+    histi = Math.max(0,Math.min(keybshistory.length-1,histi+ch));
+    keybs = keybshistory[histi];
+}
+
+function commitkeybshist(s){
+    keybshistory[keybshistory.length-1] = s;
+    histi = keybshistory.length;
+    keybshistory.push("");
+}
+
+function dispchar(str){
+    //alert(str);
+    if(str.length === 1){
+        return str;
+    }else if(str === "Enter"){
+        return "\n";
+    }else if(str === "Backspace"){
+        backspace();
+        return "";
+    }else if(str === "Shift"){
+        //you ain't got no job-- and you ain't got sh*t to do! 
+        return "";
+    }else if(str === "Meta"){
+        return ""; //not sure what I want to do yet
+    }else if(str === "Control"){
+        return ""; //not sure what I want to do yet
+    }else if(str === "ArrowUp"){
+        if(override_histcommit){
+            yduch++;
+        }else{histscroll(-1);}
+        return "";
+    }else if(str === "ArrowDown"){
+        if(override_histcommit){
+            yduch--;
+        }else{histscroll(1);}
+        return "";
+    }else if(str === "ArrowLeft"){
+        xlrch--;
+        return "";
+    }else if(str === "ArrowRight"){
+        xlrch++;
+        return "";
+    }else{
+        return str;//debug
+    }
+}
+
+function backcol([r,g,b]){
+    document.body.style.background = "rgb("+r+" "+g+" "+b+")";
+}
+
+function textcol([r,g,b]){
+    document.p.style.textcol = "rgb("+r+" "+g+" "+b+")";
+}
+
+//backcol([0,0,255]);
+//textcol([0,255,0]);
+
+document.addEventListener(
+  "keypress",
+  (event) => {
+    /*if(notif && belli !== curgresi){
+        belli = curgresi;
+        rmchange=true;
+      }*/
+      //if(isMobile){
+          //cout("[dbg]: keypress "+event.key+"\n");
+      //}
+    if(wasbs===0){
+        //keybuffer.push(event.key);alert("keypress:"+event.key);
+        kbpush(event);
+    }else{
+        wasbs--;
+    } //i guess this might be pointless idk
+    //alert(event.key);
+  }
+);
+
+document.getElementById('finpt').addEventListener("input", (e) => {
+            //cout("[dbg]: isMobile:"+isMobile+" input "+e.data+"\n");
+            if(isMobile){
+            if(typeof e.data === 'object'){
+                //mkbnullchk();
+                //backspace();
+                backspacewaits++;
+                document.getElementById("finpt").value = "";
+            }else{
+                var mkbcc = e.data.split("");
+                //mkbcancel = mkbcc.length;
+                mobilekeybuffer = mobilekeybuffer.concat(mkbcc);
+                //cout("[dbg]: mkb event\n");
+                //keybuffer = keybuffer.concat(mobilekeybuffer);
+                //mobilekeybuffer = [];
+                document.getElementById("finpt").value = "*";
+            }
+            //document.activeElement.blur();
+            //document.getElementById("finpt").value = "***";
+            //document.getElementById("finpt").focus();
+            //document.getElementById("finpt").value = "**";
+            
+            }
+        });
+
+document.getElementById('finptform').addEventListener('submit',handleForm);
+
+function mkbnullchk(){ //deprecated?
+    if(document.getElementById("finpt").value === "" || document.getElementById("finpt").value === "*"){
+        //mkbcancel++;
+        //backspace();
+        //keybuffer.push("Backspace");
+        mkbcancel = 1;
+        mobilekeybuffer.push('Backspace');
+    }else{
+        mkbcancel++;//NOT SURE !!!
+    }
+}
+
+function handleForm(event){
+    event.preventDefault();
+}
+    
+function mobile_finpt_submit(){
+    //cout("[dbg]: mobile_finpt_submit\n");
+    //mkbcancel++;
+    keybuffer.push("Enter");
+    enterwaits++;
+}
+
+function demobilize(){
+    isMobile=false;
+    //document.getElementById("finpt").visibility="hidden";
+}
+
+function kbpush(e){
+    //cout("[dbg]: (length:"+e.key.length+")kbpush "+e.key+"\n");
+    if(e.key.length===1&&isMobile){
+        //cout("[dbg]: demobilizing...\n");
+        demobilize();
+    }
+    if(typeof e.key === 'undefined' || e.key === "undefined"){
+        /*try{cout("[dbg]: '"+e.key+"' aka "+e.keyCode+" aka "+e.originalEvent.data+" pressed.\n");}catch(error){
+            cout("[Error] @kbpush: "+error.message);
+        }*/
+        //cout(JSON.parse(JSON.stringify(e))+"\n");
+        //keybuffer = keybuffer.concat(mobilekeybuffer);
+        //mobilekeybuffer = [];
+    }else if(e.key === "Backspace" && backspacewaits !== 0){
+        backspacewaits--;
+        keybuffer.push('Backspace');
+    }else if(e.key === "Unidentified"){
+        if(backspacewaits !== 0){
+            //keybuffer.push('Backspace');
+            backspacewaits--;
+        }
+    }else if(e.key === "Enter" && enterwaits > 0){
+        enterwaits--;
+    }else if(isMobile===false||e.key.length!==1){
+        //cout("[dbg]: kbpush s.t. mkbcancel === 0\n");
+        keybuffer.push(e.key);//alert("keypress:"+event.key);
+    }
+    //mkbcancel = Math.max(mkbcancel-1,0);
+}
+
+/*document.addEventListener(
+    "keyup",
+    (event) => {
+        if(isMobile){
+            cout("[dbg]: keyup '"+event.key+"'\n");
+        }
+    }
+)*/
+
+document.addEventListener(
+  "keydown",
+  (event) => {
+      
+    //if(isMobile){
+          //cout("[dbg]: keydown\n");
+      //}
+    //keybuffer.push(event.key);
+    kbpush(event);
+    //alert(event.key);
+    wasbs=1;
+    //qscroll=true;
+  }
+);
+
+window.onload = (event) => {
+  document.body.style.wordWrap = 'break-word';
+};
+
+</script>
+
+</body>
+
+</html>

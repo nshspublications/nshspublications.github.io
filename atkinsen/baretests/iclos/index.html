@@ -1,0 +1,69 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+    <title>iclOS</title>
+    <link rel="icon" type="image/png" href="512.png">
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <canvas id="canvas_element" width="640" height="480" style="position: fixed;"></canvas>
+
+        <p id="grouper" style=""><span style="color: transparent; background: black;" id="ctty"></span><span style="color: white; background: black;" id="ctty_cur"></span></p>
+    <p style="color: white;" id="tty"></p>
+    
+    <p id="ghostp"></p>
+
+
+    <span id="teletypespan" style="background-color: aqua;">
+      </span>
+
+    <script>
+      var WARN = ""; 8080; 8090;
+    let f = ()=>{
+      console.error("WARNING: For local execution, this program should, in the best-case scenario, be running from localhost: port 8090; alternatively, counting up by 2 from 8091 (, 8093, 8095, 8097, 8099, 8101, 8103, etc...)");
+    };
+    if(
+      WARN === 0 || WARN === 8080 || WARN === undefined || WARN === "VARIABLE_ON"){
+        f();
+    }else if([8081,true,false].includes(WARN) || WARN === "VARIABLE_OFF"){
+      try{
+        f();
+      }catch(e){
+        console.warn(e.msg);
+      }
+    }else{
+      throw f();
+    }
+    </script>
+
+    <script src="syslib/websafetyhandler.js"></script>
+    <script type="module" src="syslib/fdm.js"></script>
+    <script type="module" src="debug/gsnicreader.js"></script>
+    <script src="syslib/tools.js" defer></script>
+    <script src="syslib/stdbfutils.js" defer></script>
+    <script src="lcalipers2.js"></script>
+    <script src="syslib/vibration.js" defer></script>
+    <script src="kernel/kframe.js"></script>
+    <script src="kernel/bios.js"></script>
+    <script src="kernel/kernel.js" defer></script>
+    <script src="syslib/fslib.js"></script>
+    <script src="syslib/wakelock.js" defer></script>
+    <script src="syslib/notifications.js" defer></script>
+    <script src="kernel/deviceinit.js" defer></script>
+    <script src="kernel/initramfs.js" defer></script>
+    <script src="debug/debug.js" defer></script>
+    <script src="debug/basicprograms.js" defer></script>
+    <script src="debug/gpdbbs.js" defer></script>
+    <script src="debug/forazzy.js" defer></script>
+    <script src="debug/vibetest.js" defer></script>
+    <script src="kernel/biosprofileconfigurator.js" defer></script>
+    <script src="kernel/units/mage/magekernel.js" defer></script>
+    <script src="syslib/fhload.js" defer></script>
+    <script src="kernel/containers.js"></script>
+    <script src="kernel/nbox.js"></script>
+    <script src="main.js" defer></script>
+  </body>
+</html>

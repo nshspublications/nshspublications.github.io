@@ -1,0 +1,16 @@
+::namespace testlang.0;
+::define true (
+    null::(a, b);
+    (a, b)::get (a, b);
+    yes*((a=>b) and (b=>a));
+);
+::define false (
+    null::(a, b);
+    (a, b)::get (a, b);
+    (no*(a=>b)) or (no*(b=>a));
+);
+::define iq (
+    (l; r)::get match (l;iq;r);
+    true*(l=>r and r=>l);
+    false*not(l=>r or r=> l);
+);

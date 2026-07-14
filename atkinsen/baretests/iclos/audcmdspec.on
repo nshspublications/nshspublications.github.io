@@ -1,0 +1,37 @@
+{ //SOF
+//<km> KeyMap, <i> Instruction/Operation/Function, <*> GenericPointer/UnspecifiedObject
+//F<i> () => {... == F<i> void => {... == F<i> => {...     //}}} |<--ignore braces, not notation, just coercing vscode to close the open ones.|
+//predefined tokens: this_key<i>, external<COMPILER>, anything between <>, all punctuation tokens, comment // /* */
+this_key("__MAIN_SYS_OP_OBJ") ;
+
+external __SYSTEM<*> ; //ROUTE TO TOP EXECUTION HANDLER
+
+external DEFER<i> (HANDLER_ROUTE) , //DEFER EXECUTION CONTEXT TO *HANDLER_ROUTE
+
+external REPLAY_I<i> () , //Sent to __SYSTEM
+
+external POP_I<i> () , //Sent to __SYSTEM
+
+external PLAY_SIGNAL<i> (ROUTE) ,
+
+external CALL<i> (ROUTE) ,
+
+external RETURN<i> (BUFFER) , 
+
+external AUDIOTABLE<km> , 
+
+external PUSH<i> (BUFFER) ,
+external POP<i> () ,
+external POP<i> ()
+
+;
+
+NOP<i> () => {
+    PLAY_SIGNAL (AUDIOTABLE[NOP]) ; 
+} ,
+
+AWAKE_NOP_EXIT<i> () => {
+    PLAY_SIGNAL (AUDIOTABLE[AWAKE_NOP_EXIT]) ;
+} ,
+
+} //EOF
