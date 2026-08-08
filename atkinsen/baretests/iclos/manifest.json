@@ -28,7 +28,7 @@
     },
     "file_handlers": [
         {
-            "action": "./?open-file=true",
+            "action": "/?open-file=true",
             "accept": {
             "image/png": [".png"],
             "text/*": [".txt"]
@@ -36,7 +36,7 @@
         }
     ],
     "share_target": {
-        "action": "./",
+        "action": "/",
         "method": "GET",
         "enctype": "application/x-www-form-urlencoded",
         "params": {
