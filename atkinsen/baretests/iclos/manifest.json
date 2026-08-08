@@ -37,10 +37,11 @@
     "share_target": {
         "action": "/share-receiver/",
         "method": "GET",
+        "enctype": "application/x-www-form-urlencoded",
         "params": {
-        "title": "name",
-        "text": "description",
-        "url": "link"
+            "title": "__share_target__title",
+            "text": "__share_target__text",
+            "url": "__share_target__url"
         }
     }
 }
