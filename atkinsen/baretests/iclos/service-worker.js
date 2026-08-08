@@ -45,6 +45,7 @@ const APP_STATIC_RESOURCES = [
   "./debug/vibetest.js",
   "./kernel/containers.js",
   "./kernel/nbox.js",
+  "./debug/dialer.js",
 
 
   "./reference-legacy-employment_portal.html",

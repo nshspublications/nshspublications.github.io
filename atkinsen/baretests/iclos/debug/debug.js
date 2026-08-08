@@ -11,6 +11,14 @@ class DebugIO {
       this.signalcallbacks[k](code);
     }
   }
+  static SORRY_IF_SORRY(IS_SORRY){
+    if(IS_SORRY){
+      BIOS.Print("Sorry\n--DBG_KICK.\n");
+      BootStrap.FrameUIServer.RestartSubroutine.reboot();
+      return true;
+    }
+    return false;
+  }
 }
 
 document.addEventListener('click', async () => {

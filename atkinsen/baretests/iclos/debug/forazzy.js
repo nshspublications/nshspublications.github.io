@@ -49,7 +49,7 @@ let __forazzy;
             "frame",
             ["frame",],
             false,
-            "Apps | Primary Graphical User Interface Research Base"
+            "Apps | Primary Graphical User Interface Research Base\n"
         )
     );
     Foraz.init(true);

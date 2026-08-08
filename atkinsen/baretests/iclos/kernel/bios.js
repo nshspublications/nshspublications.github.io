@@ -268,7 +268,10 @@ class BootStrap {
 
             k_framemgr.SetMethod((b)=>{
                 BIOS.Frame.SUBBUFFER = b;
-                BIOS.Frame.LINK[BIOS.Frame.METHOD](BIOS.Frame.BUFFER);
+                try{BIOS.Frame.LINK[BIOS.Frame.METHOD](BIOS.Frame.BUFFER);}catch(e){
+                    BIOS.Print("ERROR: "+e.msg+"\n");
+                    // -- find a way to get this back into a known good state ( sorry )
+                }
             });
         }
         static frame([subbuffer, mode]){

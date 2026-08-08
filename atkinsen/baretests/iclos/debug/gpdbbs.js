@@ -397,7 +397,7 @@ let gpdbbs_reader;
             "frame",
             ["frame",],
             false,
-            "Simple GPDBBS Reader"
+            "Simple GPDBBS Reader\n"
         )
     );
 }
