@@ -3,7 +3,7 @@
     "short_name": "iclOS",
     "description": "HNet At The Atkinsen Institute Project On DOS Development (Newer Stream)",
     "start_url": "./",
-    "scope": "./",
+    "scope": "/atkinsen/baretests/iclos/",
     "theme_color": "#000000",
     "background_color": "#000000",
     "display": "fullscreen",
