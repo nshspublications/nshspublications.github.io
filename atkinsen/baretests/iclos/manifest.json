@@ -2,7 +2,7 @@
     "name": "iclOS Research Program",
     "short_name": "iclOS",
     "description": "HNet At The Atkinsen Institute Project On DOS Development (Newer Stream)",
-    "start_url": "./",
+    "start_url": "/atkinsen/baretests/iclos/",
     "scope": "/atkinsen/baretests/iclos/",
     "theme_color": "#000000",
     "background_color": "#000000",
@@ -28,7 +28,7 @@
     },
     "file_handlers": [
         {
-            "action": "/?open-file=true",
+            "action": "/atkinsen/baretests/iclos/?open-file=true",
             "accept": {
             "image/png": [".png"],
             "text/*": [".txt"]
@@ -36,7 +36,7 @@
         }
     ],
     "share_target": {
-        "action": "/",
+        "action": "/atkinsen/baretests/iclos/",
         "method": "GET",
         "enctype": "application/x-www-form-urlencoded",
         "params": {
