@@ -2,11 +2,15 @@
 <html lang="en-US">
   <head>
     <meta charset="utf-8" />
-    <link rel="manifest" href="manifest.json" />
+    <meta http-equiv="Content-Security-Policy" content="manifest-src 'self' blob:;">
+    <!-- <link rel="manifest" href="manifest.json" /> -->
+     <link id="dynamic-manifest" rel="manifest">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
     <title>iclOS</title>
     <link rel="icon" type="image/png" href="512.png">
     <link rel="stylesheet" href="style.css" />
+
+    <script src="dynmanifest.js" type="module"></script>
   </head>
   <body>
     <canvas id="canvas_element" width="640" height="480" style="position: fixed;"></canvas>
