@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="manifest-src 'self' blob:;">
+    <link rel="manifest" href="manifest.json" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+    <title>[vt1pub]</title>
+    <link rel="stylesheet" href="style.css"/>
+
+</head>
+
+<body>
+
+    <canvas id="canvas_element" width="640" height="480" style="position: fixed;"></canvas>
+
+    <p id="grouper" style=""><span style="color: transparent; background: black;" id="ctty"></span><span style="color: white; background: black;" id="ctty_cur"></span></p>
+    <p style="color: white;" id="tty"></p>
+    <p id="ghostp"></p>
+    <span id="teletypespan" style="background-color: aqua;">
+    </span>
+
+    <script src="lcalipers2.js" defer></script>
+    <script src="lcalipers2-experimentalaudioextension.js" defer></script> <!-- May be removed while still experimental, only do so if causing problems. -->
+    <script src="syslib/wakelock.js" defer></script>
+    <script src="main.js" defer></script> <!-- Use main-test.js for reference on non-audio functionalities -->
+
+</body>
+
+</html>

@@ -1,0 +1,28 @@
+{
+    "name": "VT1PUB",
+    "short_name": "VT1PUB",
+    "description": "VT1PUB",
+    "start_url": "./",
+    "scope": "./",
+    "theme_color": "#000000",
+    "background_color": "#000000",
+    "display": "fullscreen",
+    "display_override": ["window-controls-overlay", "standalone"],
+    "icons": [
+        {
+            "src": "512.png",
+            "type": "image/png",
+            "sizes": "512x512",
+            "purpose": "maskable"
+        },
+        {
+            "src": "512.png",
+            "type": "image/png",
+            "sizes": "512x512",
+            "purpose": "any"
+        }
+    ],
+    "launch_handler": {
+        "client_mode": "navigate-new"
+    }
+}
